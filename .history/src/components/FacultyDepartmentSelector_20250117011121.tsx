@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Select, Card, Row, Col, Typography } from 'antd';
 import { useSelector, useDispatch } from 'react-redux';
-import { Faculty, Department, RootState, LetterGrade, CourseStatus } from '../types';
+import { Faculty, Department, RootState } from '../types';
 import departmentsData from '../data/departments.json';
 import { setSelectedFacultyAndDepartment } from '../store/courseSlice';
 import { v4 as uuidv4 } from 'uuid';
@@ -36,8 +36,8 @@ const FacultyDepartmentSelector: React.FC = () => {
                     ...course,
                     id: uuidv4(),
                     credits: course.ects,
-                    letterGrade: (course.grade as unknown as LetterGrade) || 'NA',
-                    status: (course.enrolled ? 'TAKING' : 'NOT_TAKEN') as CourseStatus
+                    letterGrade: course.grade as LetterGrade || 'NA',
+                    status: course.enrolled ? 'TAKING' : 'NOT_TAKEN'
                 }));
 
                 dispatch(setSelectedFacultyAndDepartment({

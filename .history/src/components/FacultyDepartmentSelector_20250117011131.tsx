@@ -36,8 +36,8 @@ const FacultyDepartmentSelector: React.FC = () => {
                     ...course,
                     id: uuidv4(),
                     credits: course.ects,
-                    letterGrade: (course.grade as unknown as LetterGrade) || 'NA',
-                    status: (course.enrolled ? 'TAKING' : 'NOT_TAKEN') as CourseStatus
+                    letterGrade: course.grade as LetterGrade || 'NA',
+                    status: course.enrolled ? 'TAKING' : 'NOT_TAKEN'
                 }));
 
                 dispatch(setSelectedFacultyAndDepartment({
