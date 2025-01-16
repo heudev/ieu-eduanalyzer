@@ -7,10 +7,13 @@ import { PlusOutlined, DownloadOutlined, DeleteOutlined } from '@ant-design/icon
 
 const { Option } = Select;
 
+const ITEMS_PER_PAGE = 10;
+
 const CourseTable: React.FC = () => {
     const dispatch = useDispatch();
     const { courses, loading, error } = useSelector((state: RootState) => state.course);
     const [isModalVisible, setIsModalVisible] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
     const [form] = Form.useForm();
 
     const letterGrades: LetterGrade[] = useMemo(() =>
