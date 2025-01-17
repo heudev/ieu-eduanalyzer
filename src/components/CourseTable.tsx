@@ -23,7 +23,7 @@ const CourseTable: React.FC = () => {
     );
 
     const courseStatuses: CourseStatus[] = useMemo(() =>
-        ['TAKING', 'NOT TAKEN'],
+        ['TAKING', 'NOT TAKING'],
         []
     );
 
@@ -82,7 +82,7 @@ const CourseTable: React.FC = () => {
                 credits: values.credits,
                 semester: values.semester,
                 letterGrade: 'NA',
-                status: 'NOT TAKEN'
+                status: 'NOT TAKING'
             };
             dispatch(addCourse(newCourse));
             dispatch(calculateStats());
@@ -225,13 +225,13 @@ const CourseTable: React.FC = () => {
             key: 'status',
             render: (_: CourseStatus | undefined, record: Course) => (
                 <Select
-                    value={record.status || 'NOT TAKEN'}
+                    value={record.status || 'NOT TAKING'}
                     onChange={(value: CourseStatus) => handleStatusChange(record.id, value)}
                     className="w-32"
                 >
                     {courseStatuses.map(status => (
                         <Option key={status} value={status}>
-                            {status === 'TAKING' ? 'TAKING' : 'NOT TAKEN'}
+                            {status === 'TAKING' ? 'TAKING' : 'NOT TAKING'}
                         </Option>
                     ))}
                 </Select>
@@ -287,17 +287,18 @@ const CourseTable: React.FC = () => {
                         columns={columns}
                         dataSource={courses.filter(course => course.semester === semester)}
                         rowKey="id"
-                        className="bg-white rounded-lg shadow hover:shadow-xl"
+                        className={`p-2 ${semester.includes("Fall") ? "bg-gray-100" : "bg-gray-100"} rounded-lg shadow hover:shadow-lg`}
                         pagination={false}
                         rowHoverable={false}
                         rowClassName={(record) => {
-                            if ((record.letterGrade as LetterGrade) === 'FF' || (record.letterGrade as LetterGrade) === 'FD') {
+                            if (record.status === 'TAKING') {
+                                return 'bg-orange-200';
+                            }
+                            else if ((record.letterGrade as LetterGrade) === 'FF' || (record.letterGrade as LetterGrade) === 'FD') {
                                 return 'bg-red-200';
                             }
                             else if (record.letterGrade !== 'NA' && record.letterGrade !== 'FD' && record.letterGrade !== 'FF') {
                                 return 'bg-green-100';
-                            } else if (record.status === 'TAKING') {
-                                return 'bg-orange-200';
                             }
                             return '';
                         }}

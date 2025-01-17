@@ -1,6 +1,6 @@
 export type LetterGrade = 'AA' | 'BA' | 'BB' | 'CB' | 'CC' | 'DC' | 'DD' | 'FD' | 'FF' | 'NA';
 
-export type CourseStatus = 'TAKING' | 'NOT TAKEN';
+export type CourseStatus = 'TAKING' | 'NOT TAKING';
 
 export interface Course {
     id: string;

@@ -44,7 +44,7 @@ const CourseStats: React.FC = () => {
             value: stats.activeCourses,
             icon: <HourglassOutlined />,
             color: '#096dd9',
-            tooltip: 'Number of currently enrolled courses'
+            tooltip: 'Number of courses currently being taken'
         },
         {
             title: 'Total Credits',
