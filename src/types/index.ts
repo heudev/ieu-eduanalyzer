@@ -1,5 +1,3 @@
-export type ThemeMode = 'light' | 'dark';
-
 export type LetterGrade = 'AA' | 'BA' | 'BB' | 'CB' | 'CC' | 'DC' | 'DD' | 'FD' | 'FF' | 'NA';
 
 export type CourseStatus = 'TAKING' | 'NOT TAKEN';
@@ -36,8 +34,10 @@ export interface RootState {
         department: string | null;
         courses: Course[];
         departments: DepartmentData[];
-        theme: ThemeMode;
         stats: {
+            activeCourses: any;
+            failedCourses: any;
+            passedCourses: any;
             totalCredits: number;
             completedCredits: number;
             gpa: number;

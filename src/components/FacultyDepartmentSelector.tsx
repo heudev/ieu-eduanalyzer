@@ -1,13 +1,12 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Select, Card, Row, Col, Typography, Tag, Space, Modal, message } from 'antd';
-import { useSelector, useDispatch } from 'react-redux';
-import { Faculty, Department, RootState, LetterGrade, CourseStatus } from '../types';
+import { Select, Card, Row, Col, Tag, Space, Modal, message } from 'antd';
+import { useDispatch } from 'react-redux';
+import { LetterGrade, CourseStatus } from '../types';
 import departmentsData from '../data/departments.json';
 import { setSelectedFacultyAndDepartment } from '../store/courseSlice';
 import { v4 as uuidv4 } from 'uuid';
 
 const { Option } = Select;
-const { Title } = Typography;
 
 const STORAGE_KEY = 'selectedDepartments';
 const ACTIVE_DEPARTMENT_KEY = 'activeDepartment';
@@ -24,7 +23,6 @@ const FacultyDepartmentSelector: React.FC = () => {
     const [selectedDepartments, setSelectedDepartments] = useState<Array<SavedDepartment>>([]);
     const [activeDepartment, setActiveDepartment] = useState<SavedDepartment | null>(null);
     const [departmentToDelete, setDepartmentToDelete] = useState<SavedDepartment | null>(null);
-    const theme = useSelector((state: RootState) => state.course.theme);
     const dispatch = useDispatch();
 
     // LocalStorage'dan verileri yükle
@@ -173,15 +171,11 @@ const FacultyDepartmentSelector: React.FC = () => {
             <Row gutter={[16, 16]}>
                 <Col xs={24} md={12}>
                     <Card
-                        title="Fakülte Seçimi"
-                        className="h-full"
-                        style={{
-                            backgroundColor: theme === 'dark' ? '#1f1f1f' : '#ffffff',
-                            borderColor: theme === 'dark' ? '#434343' : '#f0f0f0'
-                        }}
+                        title={"Faculty Selection"}
+                        className="h-full !text-white"
                     >
                         <Select
-                            placeholder="Fakülte seçiniz"
+                            placeholder="Select a faculty"
                             style={{ width: '100%' }}
                             value={selectedFaculty}
                             onChange={handleFacultyChange}
@@ -196,15 +190,11 @@ const FacultyDepartmentSelector: React.FC = () => {
                 </Col>
                 <Col xs={24} md={12}>
                     <Card
-                        title="Bölüm Seçimi"
+                        title="Department Selection"
                         className="h-full"
-                        style={{
-                            backgroundColor: theme === 'dark' ? '#1f1f1f' : '#ffffff',
-                            borderColor: theme === 'dark' ? '#434343' : '#f0f0f0'
-                        }}
                     >
                         <Select
-                            placeholder="Bölüm seçiniz"
+                            placeholder="Select a department"
                             style={{ width: '100%' }}
                             value={selectedDepartment}
                             onChange={handleDepartmentChange}
@@ -222,15 +212,11 @@ const FacultyDepartmentSelector: React.FC = () => {
 
             {selectedDepartments.length > 0 && (
                 <Card
-                    title="Seçili Bölümler"
+                    title="Added Departments"
                     className="mt-4"
-                    style={{
-                        backgroundColor: theme === 'dark' ? '#1f1f1f' : '#ffffff',
-                        borderColor: theme === 'dark' ? '#434343' : '#f0f0f0'
-                    }}
                 >
                     <Space size={[0, 8]} wrap>
-                        {selectedDepartments.map((dept, index) => (
+                        {selectedDepartments.map((dept) => (
                             <Tag
                                 key={`${dept.faculty}-${dept.department}`}
                                 color={activeDepartment &&

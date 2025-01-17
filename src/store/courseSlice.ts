@@ -12,11 +12,11 @@ interface CourseState {
     department: string | null;
     courses: Course[];
     departments: DepartmentData[];
-    theme: 'light' | 'dark';
     stats: {
         totalCredits: number;
         completedCredits: number;
         gpa: number;
+
     };
 }
 
@@ -56,11 +56,10 @@ const initialState: CourseState = {
     department: null,
     courses: [],
     departments: [],
-    theme: 'light',
     stats: {
         totalCredits: 0,
         completedCredits: 0,
-        gpa: 0
+        gpa: 0,
     }
 };
 
@@ -78,18 +77,15 @@ const courseSlice = createSlice({
             );
 
             if (existingDeptIndex === -1) {
-                // Yeni bölüm ekleniyor
                 state.departments.push({
                     faculty: action.payload.faculty,
                     department: action.payload.department,
                     courses: action.payload.courses
                 });
-                // Aktif bölümü güncelle
                 state.faculty = action.payload.faculty;
                 state.department = action.payload.department;
                 state.courses = action.payload.courses;
             } else {
-                // Var olan bölüme geçiş yapılıyor
                 state.faculty = action.payload.faculty;
                 state.department = action.payload.department;
                 state.courses = state.departments[existingDeptIndex].courses;
@@ -110,7 +106,6 @@ const courseSlice = createSlice({
                 };
                 state.courses[courseIndex] = updatedCourse;
 
-                // Bölüm listesindeki dersi de güncelle
                 const deptIndex = state.departments.findIndex(
                     d => d.faculty === state.faculty && d.department === state.department
                 );
@@ -156,9 +151,6 @@ const courseSlice = createSlice({
         },
         calculateStats: (state) => {
             state.stats = computeCourseStats(state.courses);
-        },
-        setTheme: (state, action: PayloadAction<'light' | 'dark'>) => {
-            state.theme = action.payload;
         }
     }
 });
@@ -169,7 +161,6 @@ export const {
     addCourse,
     deleteCourse,
     calculateStats,
-    setTheme
 } = courseSlice.actions;
 
 export default courseSlice.reducer; 

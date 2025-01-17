@@ -13,7 +13,6 @@ export const loadState = () => {
         return {
             course: {
                 ...state.course,
-                theme: state.course?.theme || 'light',
                 departments: state.course?.departments || []
             }
         };
@@ -33,7 +32,6 @@ export const localStorageMiddleware: Middleware = store => next => action => {
                 department: state.course.department,
                 courses: state.course.courses,
                 departments: state.course.departments,
-                theme: state.course.theme,
                 stats: state.course.stats
             }
         }));

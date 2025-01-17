@@ -5,11 +5,12 @@ import { Course, LetterGrade, CourseStatus, RootState } from '../types';
 import { updateCourse, addCourse, calculateStats, deleteCourse } from '../store/courseSlice';
 import { PlusOutlined, DownloadOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
 
+
 const { Option } = Select;
 
 const CourseTable: React.FC = () => {
     const dispatch = useDispatch();
-    const { courses, loading, error } = useSelector((state: RootState) => state.course);
+    const { courses } = useSelector((state: RootState) => state.course);
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [isEditModalVisible, setIsEditModalVisible] = useState(false);
     const [editingCourse, setEditingCourse] = useState<Course | null>(null);
@@ -257,14 +258,6 @@ const CourseTable: React.FC = () => {
         }
     ], [letterGrades, courseStatuses, handleGradeChange, handleStatusChange, handleDeleteCourse, handleEditCourse]);
 
-    if (loading) {
-        return <div className="text-center py-4">Loading...</div>;
-    }
-
-    if (error) {
-        return <div className="text-center py-4 text-red-500">{error}</div>;
-    }
-
     return (
         <div className="space-y-4">
             <div className="flex flex-wrap gap-4 items-center justify-between">
@@ -297,12 +290,13 @@ const CourseTable: React.FC = () => {
                         className="bg-white rounded-lg shadow"
                         pagination={false}
                         rowClassName={(record) => {
-                            if (record.status === 'TAKING') {
-                                return 'bg-orange-200';
-                            } else if (record.letterGrade === 'FF' || record.letterGrade === 'FD') {
+                            if ((record.letterGrade as LetterGrade) === 'FF' || (record.letterGrade as LetterGrade) === 'FD') {
                                 return 'bg-red-200';
-                            } else if (record.letterGrade !== 'NA' && record.letterGrade !== 'FF' && record.letterGrade !== 'FD') {
+                            }
+                            else if (record.letterGrade !== 'NA' && record.letterGrade !== 'FD' && record.letterGrade !== 'FF') {
                                 return 'bg-green-100';
+                            } else if (record.status === 'TAKING') {
+                                return 'bg-orange-200';
                             }
                             return '';
                         }}

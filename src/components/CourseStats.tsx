@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { Row, Col, Statistic, Card, Tooltip } from 'antd';
 import { useSelector } from 'react-redux';
-import { CourseState, RootState } from '../types';
+import { RootState } from '../types';
 import {
     TrophyOutlined,
     CheckCircleOutlined,
@@ -14,7 +14,7 @@ import {
 } from '@ant-design/icons';
 
 const CourseStats: React.FC = () => {
-    const { stats, theme } = useSelector((state: RootState) => state.course);
+    const { stats } = useSelector((state: RootState) => state.course);
 
     const statItems = useMemo(() => [
         {
@@ -23,48 +23,48 @@ const CourseStats: React.FC = () => {
             precision: 2,
             icon: <TrophyOutlined />,
             color: '#3f8600',
-            tooltip: 'Genel Not Ortalaması'
+            tooltip: 'Grade Point Average'
         },
         {
             title: 'Passed Courses',
             value: stats.passedCourses,
             icon: <CheckCircleOutlined />,
             color: '#3f8600',
-            tooltip: 'Başarıyla tamamlanan ders sayısı'
+            tooltip: 'Number of successfully completed courses'
         },
         {
             title: 'Failed Courses',
             value: stats.failedCourses,
             icon: <CloseCircleOutlined />,
             color: '#cf1322',
-            tooltip: 'Başarısız olunan ders sayısı'
+            tooltip: 'Number of failed courses'
         },
         {
             title: 'Active Courses',
             value: stats.activeCourses,
             icon: <HourglassOutlined />,
             color: '#096dd9',
-            tooltip: 'Şu an alınan ders sayısı'
+            tooltip: 'Number of currently enrolled courses'
         },
         {
             title: 'Total Credits',
             value: stats.totalCredits,
             icon: <BookOutlined />,
-            tooltip: 'Toplam kredi sayısı'
+            tooltip: 'Total number of credits'
         },
         {
             title: 'Completed Credits',
             value: stats.completedCredits,
             icon: <CheckSquareOutlined />,
             color: '#3f8600',
-            tooltip: 'Başarıyla tamamlanan kredi sayısı'
+            tooltip: 'Number of successfully completed credits'
         },
         {
             title: 'Remaining Credits',
-            value: 240 - stats.completedCredits, // Varsayılan olarak 240 kredi
+            value: stats.totalCredits - stats.completedCredits,
             icon: <ExceptionOutlined />,
             color: '#faad14',
-            tooltip: 'Mezuniyet için kalan kredi sayısı'
+            tooltip: 'Number of credits remaining for graduation'
         },
         {
             title: 'Pass Rate',
@@ -73,7 +73,7 @@ const CourseStats: React.FC = () => {
             suffix: '%',
             icon: <PercentageOutlined />,
             color: '#1890ff',
-            tooltip: 'Başarılı derslerin toplam derslere oranı'
+            tooltip: 'Percentage of courses successfully completed'
         }
     ], [stats]);
 
@@ -84,10 +84,6 @@ const CourseStats: React.FC = () => {
                     <Tooltip title={item.tooltip}>
                         <Card
                             className="text-center hover:shadow-lg transition-shadow duration-300"
-                            style={{
-                                backgroundColor: theme === 'dark' ? '#1f1f1f' : '#ffffff',
-                                borderColor: theme === 'dark' ? '#434343' : '#f0f0f0'
-                            }}
                         >
                             <div className="flex items-center justify-center mb-2">
                                 <span
@@ -99,7 +95,7 @@ const CourseStats: React.FC = () => {
                             </div>
                             <Statistic
                                 title={
-                                    <span style={{ color: theme === 'dark' ? '#ffffff' : '#000000' }}>
+                                    <span>
                                         {item.title}
                                     </span>
                                 }
