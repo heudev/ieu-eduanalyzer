@@ -17,12 +17,12 @@ const CourseTable: React.FC = () => {
     const [editForm] = Form.useForm();
 
     const letterGrades: LetterGrade[] = useMemo(() =>
-        ['AA', 'BA', 'BB', 'CB', 'CC', 'DC', 'DD', 'FF', 'NA'],
+        ['AA', 'BA', 'BB', 'CB', 'CC', 'DC', 'DD', 'FD', 'FF', 'NA'],
         []
     );
 
     const courseStatuses: CourseStatus[] = useMemo(() =>
-        ['PASSED', 'FAILED', 'TAKING', 'NOT_TAKEN'],
+        ['TAKING', 'NOT TAKEN'],
         []
     );
 
@@ -33,18 +33,10 @@ const CourseTable: React.FC = () => {
             return;
         }
 
-        let status: CourseStatus = 'NOT_TAKEN';
-        if (letterGrade === 'FF') {
-            status = 'FAILED';
-        } else if (letterGrade !== 'NA') {
-            status = 'PASSED';
-        }
-
         dispatch(updateCourse({
             courseId,
             updates: {
-                letterGrade,
-                status
+                letterGrade
             }
         }));
         dispatch(calculateStats());
@@ -57,16 +49,10 @@ const CourseTable: React.FC = () => {
             return;
         }
 
-        let letterGrade: LetterGrade = 'NA';
-        if (status === 'FAILED') {
-            letterGrade = 'FF';
-        }
-
         dispatch(updateCourse({
             courseId,
             updates: {
-                status,
-                letterGrade
+                status
             }
         }));
         dispatch(calculateStats());
@@ -74,14 +60,14 @@ const CourseTable: React.FC = () => {
 
     const handleDeleteCourse = useCallback((courseId: string) => {
         Modal.confirm({
-            title: 'Dersi Sil',
-            content: 'Bu dersi silmek istediğinizden emin misiniz?',
-            okText: 'Evet',
-            cancelText: 'Hayır',
+            title: 'Delete Course',
+            content: 'Are you sure you want to delete this course?',
+            okText: 'Yes',
+            cancelText: 'No',
             onOk: () => {
                 dispatch(deleteCourse(courseId));
                 dispatch(calculateStats());
-                message.success('Ders başarıyla silindi');
+                message.success('Course deleted successfully');
             }
         });
     }, [dispatch]);
@@ -95,20 +81,20 @@ const CourseTable: React.FC = () => {
                 credits: values.credits,
                 semester: values.semester,
                 letterGrade: 'NA',
-                status: 'NOT_TAKEN'
+                status: 'NOT TAKEN'
             };
             dispatch(addCourse(newCourse));
             dispatch(calculateStats());
             setIsModalVisible(false);
             form.resetFields();
-            message.success('Ders başarıyla eklendi');
+            message.success('Course added successfully');
         });
     }, [dispatch, form]);
 
     const handleExport = useCallback(() => {
         try {
             const csvContent = [
-                ['Kod', 'İsim', 'Kredi', 'Harf Notu', 'Durum', 'Dönem', 'Yıl'],
+                ['Code', 'Name', 'Credit', 'Grade', 'Status', 'Semester'],
                 ...courses.map(course => [
                     course.code,
                     course.name,
@@ -116,7 +102,6 @@ const CourseTable: React.FC = () => {
                     course.letterGrade,
                     course.status,
                     course.semester,
-                    course.year
                 ])
             ].map(row => row.join(',')).join('\n');
 
@@ -125,9 +110,9 @@ const CourseTable: React.FC = () => {
             link.href = URL.createObjectURL(blob);
             link.download = 'dersler.csv';
             link.click();
-            message.success('Dersler başarıyla dışa aktarıldı');
+            message.success('Courses exported successfully');
         } catch (error) {
-            message.error('Dışa aktarma sırasında bir hata oluştu');
+            message.error('Error exporting courses');
         }
     }, [courses]);
 
@@ -139,11 +124,11 @@ const CourseTable: React.FC = () => {
     const calculateSemesterAverage = useCallback((semesterCourses: Course[]) => {
         const gradePoints: { [key in LetterGrade]: number } = {
             'AA': 4.0, 'BA': 3.5, 'BB': 3.0, 'CB': 2.5,
-            'CC': 2.0, 'DC': 1.5, 'DD': 1.0, 'FF': 0.0, 'NA': 0.0
+            'CC': 2.0, 'DC': 1.5, 'DD': 1.0, 'FD': 0.5, 'FF': 0.0, 'NA': 0.0
         };
 
         const completedCourses = semesterCourses.filter(course =>
-            course.letterGrade !== 'NA' && course.status === 'PASSED'
+            course.letterGrade !== 'NA'
         );
 
         if (completedCourses.length === 0) return 0;
@@ -187,40 +172,45 @@ const CourseTable: React.FC = () => {
             setIsEditModalVisible(false);
             setEditingCourse(null);
             editForm.resetFields();
-            message.success('Ders başarıyla güncellendi');
+            message.success('Course updated successfully');
         });
     }, [dispatch, editForm, editingCourse]);
 
     const columns = useMemo(() => [
         {
-            title: 'Kod',
+            title: 'Code',
             dataIndex: 'code',
             key: 'code'
         },
         {
-            title: 'İsim',
+            title: 'Name',
             dataIndex: 'name',
             key: 'name'
         },
         {
-            title: 'Kredi',
+            title: 'Credit',
             dataIndex: 'credits',
             key: 'credits'
         },
         {
-            title: 'Dönem',
+            title: 'Semester',
             dataIndex: 'semester',
             key: 'semester'
         },
         {
-            title: 'Harf Notu',
+            title: 'Letter Grade',
             dataIndex: 'letterGrade',
             key: 'letterGrade',
             render: (_: LetterGrade | undefined, record: Course) => (
                 <Select
                     value={record.letterGrade || 'NA'}
                     onChange={(value: LetterGrade) => handleGradeChange(record.id, value)}
-                    className="w-24"
+                    className={`w-24 ${record.letterGrade === 'FF' || record.letterGrade === 'FD'
+                        ? 'text-gray-500'
+                        : record.letterGrade !== 'NA'
+                            ? 'text-green-600 font-semibold'
+                            : ''
+                        }`}
                 >
                     {letterGrades.map(grade => (
                         <Option key={grade} value={grade}>{grade}</Option>
@@ -229,25 +219,25 @@ const CourseTable: React.FC = () => {
             ),
         },
         {
-            title: 'Durum',
+            title: 'Status',
             dataIndex: 'status',
             key: 'status',
             render: (_: CourseStatus | undefined, record: Course) => (
                 <Select
-                    value={record.status || 'NOT_TAKEN'}
+                    value={record.status || 'NOT TAKEN'}
                     onChange={(value: CourseStatus) => handleStatusChange(record.id, value)}
                     className="w-32"
                 >
                     {courseStatuses.map(status => (
                         <Option key={status} value={status}>
-                            {status.replace('_', ' ')}
+                            {status === 'TAKING' ? 'TAKING' : 'NOT TAKEN'}
                         </Option>
                     ))}
                 </Select>
             ),
         },
         {
-            title: 'İşlemler',
+            title: 'Actions',
             key: 'actions',
             render: (_: any, record: Course) => (
                 <Space>
@@ -268,7 +258,7 @@ const CourseTable: React.FC = () => {
     ], [letterGrades, courseStatuses, handleGradeChange, handleStatusChange, handleDeleteCourse, handleEditCourse]);
 
     if (loading) {
-        return <div className="text-center py-4">Yükleniyor...</div>;
+        return <div className="text-center py-4">Loading...</div>;
     }
 
     if (error) {
@@ -284,13 +274,13 @@ const CourseTable: React.FC = () => {
                         icon={<PlusOutlined />}
                         onClick={() => setIsModalVisible(true)}
                     >
-                        Ders Ekle
+                        Add Course
                     </Button>
                     <Button
                         icon={<DownloadOutlined />}
                         onClick={handleExport}
                     >
-                        CSV'ye Aktar
+                        Export to CSV
                     </Button>
                 </Space>
             </div>
@@ -298,7 +288,7 @@ const CourseTable: React.FC = () => {
             {uniqueSemesters.map(semester => (
                 <div key={semester} className="mb-8">
                     <h3 className="text-lg font-semibold mb-2">
-                        {semester} - Dönem Ortalaması: {calculateSemesterAverage(courses.filter(course => course.semester === semester))}
+                        {semester} - Semester Average: {calculateSemesterAverage(courses.filter(course => course.semester === semester))}
                     </h3>
                     <Table
                         columns={columns}
@@ -307,19 +297,21 @@ const CourseTable: React.FC = () => {
                         className="bg-white rounded-lg shadow"
                         pagination={false}
                         rowClassName={(record) => {
-                            switch (record.status) {
-                                case 'PASSED': return 'bg-green-50';
-                                case 'FAILED': return 'bg-red-50';
-                                case 'TAKING': return 'bg-blue-50';
-                                default: return '';
+                            if (record.status === 'TAKING') {
+                                return 'bg-orange-200';
+                            } else if (record.letterGrade === 'FF' || record.letterGrade === 'FD') {
+                                return 'bg-red-200';
+                            } else if (record.letterGrade !== 'NA' && record.letterGrade !== 'FF' && record.letterGrade !== 'FD') {
+                                return 'bg-green-100';
                             }
+                            return '';
                         }}
                     />
                 </div>
             ))}
 
             <Modal
-                title="Yeni Ders Ekle"
+                title="Add New Course"
                 open={isModalVisible}
                 onOk={handleAddCourse}
                 onCancel={() => {
@@ -330,36 +322,36 @@ const CourseTable: React.FC = () => {
                 <Form form={form} layout="vertical">
                     <Form.Item
                         name="code"
-                        label="Ders Kodu"
-                        rules={[{ required: true, message: 'Lütfen ders kodunu girin' }]}
+                        label="Course Code"
+                        rules={[{ required: true, message: 'Course code is required' }]}
                     >
                         <Input />
                     </Form.Item>
                     <Form.Item
                         name="name"
-                        label="Ders Adı"
-                        rules={[{ required: true, message: 'Lütfen ders adını girin' }]}
+                        label="Course Name"
+                        rules={[{ required: true, message: 'Course name is required' }]}
                     >
                         <Input />
                     </Form.Item>
                     <Form.Item
                         name="credits"
-                        label="Kredi"
-                        rules={[{ required: true, message: 'Lütfen krediyi girin' }]}
+                        label="Course Credit"
+                        rules={[{ required: true, message: 'Course credit is required' }]}
                     >
                         <InputNumber min={1} max={30} />
                     </Form.Item>
                     <Form.Item
                         name="semester"
-                        label="Dönem"
-                        rules={[{ required: true, message: 'Lütfen dönemi seçin' }]}
+                        label="Semester"
+                        rules={[{ required: true, message: 'Semester is required' }]}
                     >
                         <Select>
                             {uniqueSemesters.map(semester => (
                                 <Option key={semester} value={semester}>{semester}</Option>
                             ))}
                             {uniqueSemesters.length === 0 && (
-                                <Option value="1. Dönem">1. Dönem</Option>
+                                <Option value="1. Semester">1. Semester</Option>
                             )}
                         </Select>
                     </Form.Item>
@@ -367,7 +359,7 @@ const CourseTable: React.FC = () => {
             </Modal>
 
             <Modal
-                title="Dersi Düzenle"
+                title="Edit Course"
                 open={isEditModalVisible}
                 onOk={handleUpdateCourse}
                 onCancel={() => {
@@ -379,37 +371,34 @@ const CourseTable: React.FC = () => {
                 <Form form={editForm} layout="vertical">
                     <Form.Item
                         name="code"
-                        label="Ders Kodu"
-                        rules={[{ required: true, message: 'Lütfen ders kodunu girin' }]}
+                        label="Course Code"
+                        rules={[{ required: true, message: 'Course code is required' }]}
                     >
                         <Input />
                     </Form.Item>
                     <Form.Item
                         name="name"
-                        label="Ders Adı"
-                        rules={[{ required: true, message: 'Lütfen ders adını girin' }]}
+                        label="Course Name"
+                        rules={[{ required: true, message: 'Course name is required' }]}
                     >
                         <Input />
                     </Form.Item>
                     <Form.Item
                         name="credits"
-                        label="Kredi"
-                        rules={[{ required: true, message: 'Lütfen krediyi girin' }]}
+                        label="Course Credit"
+                        rules={[{ required: true, message: 'Course credit is required' }]}
                     >
                         <InputNumber min={1} max={30} />
                     </Form.Item>
                     <Form.Item
                         name="semester"
-                        label="Dönem"
-                        rules={[{ required: true, message: 'Lütfen dönemi seçin' }]}
+                        label="Semester"
+                        rules={[{ required: true, message: 'Semester is required' }]}
                     >
                         <Select>
                             {uniqueSemesters.map(semester => (
                                 <Option key={semester} value={semester}>{semester}</Option>
                             ))}
-                            {uniqueSemesters.length === 0 && (
-                                <Option value="1. Dönem">1. Dönem</Option>
-                            )}
                         </Select>
                     </Form.Item>
                 </Form>

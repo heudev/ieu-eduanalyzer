@@ -6,9 +6,11 @@ import {
     TrophyOutlined,
     CheckCircleOutlined,
     CloseCircleOutlined,
-    LoadingOutlined,
+    HourglassOutlined,
     BookOutlined,
-    CheckSquareOutlined
+    CheckSquareOutlined,
+    ExceptionOutlined,
+    PercentageOutlined
 } from '@ant-design/icons';
 
 const CourseStats: React.FC = () => {
@@ -24,38 +26,54 @@ const CourseStats: React.FC = () => {
             tooltip: 'Genel Not Ortalaması'
         },
         {
-            title: 'Başarılı Dersler',
+            title: 'Passed Courses',
             value: stats.passedCourses,
             icon: <CheckCircleOutlined />,
             color: '#3f8600',
             tooltip: 'Başarıyla tamamlanan ders sayısı'
         },
         {
-            title: 'Başarısız Dersler',
+            title: 'Failed Courses',
             value: stats.failedCourses,
             icon: <CloseCircleOutlined />,
             color: '#cf1322',
             tooltip: 'Başarısız olunan ders sayısı'
         },
         {
-            title: 'Aktif Dersler',
+            title: 'Active Courses',
             value: stats.activeCourses,
-            icon: <LoadingOutlined />,
+            icon: <HourglassOutlined />,
             color: '#096dd9',
             tooltip: 'Şu an alınan ders sayısı'
         },
         {
-            title: 'Toplam Kredi',
+            title: 'Total Credits',
             value: stats.totalCredits,
             icon: <BookOutlined />,
             tooltip: 'Toplam kredi sayısı'
         },
         {
-            title: 'Tamamlanan Kredi',
+            title: 'Completed Credits',
             value: stats.completedCredits,
             icon: <CheckSquareOutlined />,
             color: '#3f8600',
             tooltip: 'Başarıyla tamamlanan kredi sayısı'
+        },
+        {
+            title: 'Remaining Credits',
+            value: 240 - stats.completedCredits, // Varsayılan olarak 240 kredi
+            icon: <ExceptionOutlined />,
+            color: '#faad14',
+            tooltip: 'Mezuniyet için kalan kredi sayısı'
+        },
+        {
+            title: 'Pass Rate',
+            value: ((stats.passedCourses / (stats.passedCourses + stats.failedCourses)) * 100),
+            precision: 1,
+            suffix: '%',
+            icon: <PercentageOutlined />,
+            color: '#1890ff',
+            tooltip: 'Başarılı derslerin toplam derslere oranı'
         }
     ], [stats]);
 

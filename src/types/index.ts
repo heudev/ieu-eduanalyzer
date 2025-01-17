@@ -1,8 +1,8 @@
 export type ThemeMode = 'light' | 'dark';
 
-export type LetterGrade = 'AA' | 'BA' | 'BB' | 'CB' | 'CC' | 'DC' | 'DD' | 'FF' | 'NA';
+export type LetterGrade = 'AA' | 'BA' | 'BB' | 'CB' | 'CC' | 'DC' | 'DD' | 'FD' | 'FF' | 'NA';
 
-export type CourseStatus = 'PASSED' | 'FAILED' | 'TAKING' | 'NOT_TAKEN';
+export type CourseStatus = 'PASSED' | 'FAILED' | 'TAKING' | 'NOT TAKEN';
 
 export interface Course {
     id: string;
