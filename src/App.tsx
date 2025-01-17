@@ -6,6 +6,7 @@ import { localStorageMiddleware, loadState } from './store/middleware/localStora
 import FacultyDepartmentSelector from './components/FacultyDepartmentSelector';
 import CourseTable from './components/CourseTable';
 import CourseStats from './components/CourseStats';
+import { BarChartOutlined } from '@ant-design/icons';
 
 const { Header, Content } = Layout;
 const { Title } = Typography;
@@ -26,10 +27,13 @@ const AppContent: React.FC = () => {
 
   return (
     <Layout className={`min-h-screen`}>
-      <Header className={`shadow flex items-center justify-between bg-gray-100`}>
-        <Title level={3} className={`py-4 m-3`}>
-          IEU EduAnalyzer
-        </Title>
+      <Header className={`shadow flex items-center justify-between bg-gray-50`}>
+        <div className="flex items-center">
+          <BarChartOutlined style={{ fontSize: '24px', marginRight: '10px' }} />
+          <Title level={3} className={`py-4 m-3`}>
+            IEU EduAnalyzer
+          </Title>
+        </div>
       </Header>
       <Content className="p-6">
         <div className="max-w-7xl mx-auto space-y-5">

@@ -1,11 +1,9 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { Table, Select, Button, Space, Modal, Form, InputNumber, Input, message } from 'antd';
+import { Table, Select, Button, Space, Modal, Form, InputNumber, Input, message, Tooltip, Tag } from 'antd';
 import { useDispatch, useSelector } from 'react-redux';
 import { Course, LetterGrade, CourseStatus, RootState } from '../types';
 import { updateCourse, addCourse, calculateStats, deleteCourse } from '../store/courseSlice';
-import { PlusOutlined, DownloadOutlined, DeleteOutlined, EditOutlined } from '@ant-design/icons';
-
-
+import { PlusOutlined, DownloadOutlined, DeleteOutlined, EditOutlined, TrophyOutlined, CompassOutlined } from '@ant-design/icons';
 const { Option } = Select;
 
 const CourseTable: React.FC = () => {
@@ -104,12 +102,12 @@ const CourseTable: React.FC = () => {
                     course.status,
                     course.semester,
                 ])
-            ].map(row => row.join(',')).join('\n');
+            ].map(row => row.join(';')).join('\n');
 
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
-            link.download = 'dersler.csv';
+            link.download = 'department.csv';
             link.click();
             message.success('Courses exported successfully');
         } catch (error) {
@@ -280,14 +278,22 @@ const CourseTable: React.FC = () => {
 
             {uniqueSemesters.map(semester => (
                 <div key={semester} className="mb-8">
-                    <h3 className="text-lg font-semibold mb-2">
-                        {semester} - Semester Average: {calculateSemesterAverage(courses.filter(course => course.semester === semester))}
+                    <h3 className="text-lg font-semibold mb-2 flex justify-between items-center">
+                        <div className='text-gray-700 flex items-center'>
+                            <Tooltip title="This is the average grade for the semester">
+                                <CompassOutlined className="ml-2 mr-2" />
+                            </Tooltip>
+                            {semester}
+                        </div>
+                        <Tag icon={<TrophyOutlined />} color="success">
+                            Semester Average: {calculateSemesterAverage(courses.filter(course => course.semester === semester))}
+                        </Tag>
                     </h3>
                     <Table
                         columns={columns}
                         dataSource={courses.filter(course => course.semester === semester)}
                         rowKey="id"
-                        className={`p-2 ${semester.includes("Fall") ? "bg-gray-100" : "bg-gray-100"} rounded-lg shadow hover:shadow-lg`}
+                        className={`mb-10 ${semester.includes("Fall") ? "bg-gray-100" : "bg-gray-100"} rounded-lg shadow hover:shadow-lg`}
                         pagination={false}
                         rowHoverable={false}
                         rowClassName={(record) => {
@@ -403,4 +409,4 @@ const CourseTable: React.FC = () => {
     );
 };
 
-export default React.memo(CourseTable); 
+export default React.memo(CourseTable);
