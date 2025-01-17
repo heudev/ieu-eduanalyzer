@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Layout, Typography, Card, Switch } from 'antd';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import { useSelector, useDispatch } from 'react-redux';
-import courseReducer, { toggleTheme, loadInitialData } from './store/courseSlice';
+import courseReducer, { setTheme } from './store/courseSlice';
+import { localStorageMiddleware, loadState } from './store/middleware/localStorage';
 import FacultyDepartmentSelector from './components/FacultyDepartmentSelector';
 import CourseTable from './components/CourseTable';
 import CourseStats from './components/CourseStats';
@@ -12,10 +13,15 @@ import { ThemeMode } from './types';
 const { Header, Content } = Layout;
 const { Title } = Typography;
 
+const preloadedState = loadState();
+
 const store = configureStore({
   reducer: {
     course: courseReducer,
   },
+  preloadedState,
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(localStorageMiddleware),
 });
 
 interface RootState {
@@ -28,9 +34,9 @@ const AppContent: React.FC = () => {
   const dispatch = useDispatch();
   const theme = useSelector((state: RootState) => state.course.theme);
 
-  useEffect(() => {
-    dispatch(loadInitialData());
-  }, [dispatch]);
+  const handleThemeChange = () => {
+    dispatch(setTheme(theme === 'light' ? 'dark' : 'light'));
+  };
 
   return (
     <Layout className={`min-h-screen ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-100'}`}>
@@ -40,7 +46,7 @@ const AppContent: React.FC = () => {
         </Title>
         <Switch
           checked={theme === 'dark'}
-          onChange={() => dispatch(toggleTheme())}
+          onChange={handleThemeChange}
           checkedChildren="🌙"
           unCheckedChildren="☀️"
         />

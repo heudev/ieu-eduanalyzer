@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Select, Card, Row, Col, Typography } from 'antd';
+import { Select, Card, Row, Col, Typography, Tag, Space, Modal, message } from 'antd';
 import { useSelector, useDispatch } from 'react-redux';
 import { Faculty, Department, RootState, LetterGrade, CourseStatus } from '../types';
 import departmentsData from '../data/departments.json';
@@ -9,11 +9,61 @@ import { v4 as uuidv4 } from 'uuid';
 const { Option } = Select;
 const { Title } = Typography;
 
+const STORAGE_KEY = 'selectedDepartments';
+const ACTIVE_DEPARTMENT_KEY = 'activeDepartment';
+
+interface SavedDepartment {
+    faculty: string;
+    department: string;
+    courses: any[];
+}
+
 const FacultyDepartmentSelector: React.FC = () => {
     const [selectedFaculty, setSelectedFaculty] = useState<string | null>(null);
     const [selectedDepartment, setSelectedDepartment] = useState<string | null>(null);
+    const [selectedDepartments, setSelectedDepartments] = useState<Array<SavedDepartment>>([]);
+    const [activeDepartment, setActiveDepartment] = useState<SavedDepartment | null>(null);
+    const [departmentToDelete, setDepartmentToDelete] = useState<SavedDepartment | null>(null);
     const theme = useSelector((state: RootState) => state.course.theme);
     const dispatch = useDispatch();
+
+    // LocalStorage'dan verileri yükle
+    useEffect(() => {
+        const savedDepartments = localStorage.getItem(STORAGE_KEY);
+        const savedActiveDepartment = localStorage.getItem(ACTIVE_DEPARTMENT_KEY);
+
+        if (savedDepartments) {
+            const departments = JSON.parse(savedDepartments);
+            setSelectedDepartments(departments);
+
+            if (savedActiveDepartment) {
+                const active = JSON.parse(savedActiveDepartment);
+                setActiveDepartment(active);
+                dispatch(setSelectedFacultyAndDepartment({
+                    faculty: active.faculty,
+                    department: active.department,
+                    courses: active.courses
+                }));
+            }
+        }
+    }, []);
+
+    // Değişiklikleri LocalStorage'a kaydet
+    useEffect(() => {
+        if (selectedDepartments.length > 0) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(selectedDepartments));
+        } else {
+            localStorage.removeItem(STORAGE_KEY);
+        }
+    }, [selectedDepartments]);
+
+    useEffect(() => {
+        if (activeDepartment) {
+            localStorage.setItem(ACTIVE_DEPARTMENT_KEY, JSON.stringify(activeDepartment));
+        } else {
+            localStorage.removeItem(ACTIVE_DEPARTMENT_KEY);
+        }
+    }, [activeDepartment]);
 
     const faculties = useMemo(() =>
         [...new Set(departmentsData.map(item => item.faculty))],
@@ -40,11 +90,20 @@ const FacultyDepartmentSelector: React.FC = () => {
                     status: (course.enrolled ? 'TAKING' : 'NOT TAKEN') as CourseStatus
                 }));
 
-                dispatch(setSelectedFacultyAndDepartment({
+                const newDepartment = {
                     faculty: selectedFaculty,
                     department: selectedDepartment,
                     courses: coursesWithIds
-                }));
+                };
+
+                if (!selectedDepartments.some(d =>
+                    d.faculty === newDepartment.faculty &&
+                    d.department === newDepartment.department
+                )) {
+                    setSelectedDepartments(prev => [...prev, newDepartment]);
+                    setActiveDepartment(newDepartment);
+                    dispatch(setSelectedFacultyAndDepartment(newDepartment));
+                }
             }
         }
     }, [selectedFaculty, selectedDepartment, dispatch]);
@@ -56,6 +115,57 @@ const FacultyDepartmentSelector: React.FC = () => {
 
     const handleDepartmentChange = (value: string) => {
         setSelectedDepartment(value);
+    };
+
+    const handleDepartmentClick = (dept: SavedDepartment) => {
+        setActiveDepartment(dept);
+        dispatch(setSelectedFacultyAndDepartment({
+            faculty: dept.faculty,
+            department: dept.department,
+            courses: dept.courses
+        }));
+    };
+
+    const handleRemoveDepartment = (dept: SavedDepartment) => {
+        setDepartmentToDelete(dept);
+    };
+
+    const confirmDelete = () => {
+        if (!departmentToDelete) return;
+
+        const deptToRemove = departmentToDelete;
+
+        setSelectedDepartments(prev => {
+            const updatedDepts = prev.filter(d =>
+                !(d.faculty === deptToRemove.faculty && d.department === deptToRemove.department)
+            );
+            return updatedDepts;
+        });
+
+        if (activeDepartment &&
+            activeDepartment.faculty === deptToRemove.faculty &&
+            activeDepartment.department === deptToRemove.department) {
+            const remaining = selectedDepartments.filter(d =>
+                !(d.faculty === deptToRemove.faculty && d.department === deptToRemove.department)
+            );
+            if (remaining.length > 0) {
+                handleDepartmentClick(remaining[0]);
+            } else {
+                setActiveDepartment(null);
+                dispatch(setSelectedFacultyAndDepartment({
+                    faculty: '',
+                    department: '',
+                    courses: []
+                }));
+            }
+        }
+
+        setDepartmentToDelete(null);
+        message.success(`${deptToRemove.faculty} - ${deptToRemove.department} bölümü başarıyla silindi.`);
+    };
+
+    const cancelDelete = () => {
+        setDepartmentToDelete(null);
     };
 
     return (
@@ -110,27 +220,57 @@ const FacultyDepartmentSelector: React.FC = () => {
                 </Col>
             </Row>
 
-            {selectedFaculty && (
+            {selectedDepartments.length > 0 && (
                 <Card
+                    title="Seçili Bölümler"
                     className="mt-4"
                     style={{
                         backgroundColor: theme === 'dark' ? '#1f1f1f' : '#ffffff',
                         borderColor: theme === 'dark' ? '#434343' : '#f0f0f0'
                     }}
                 >
-                    <Title
-                        level={4}
-                        style={{ color: theme === 'dark' ? '#ffffff' : '#000000' }}
-                    >
-                        {selectedFaculty}
-                    </Title>
-                    <p style={{ color: theme === 'dark' ? '#ffffff' : '#000000' }}>
-                        {selectedDepartment
-                            ? `Seçili Bölüm: ${selectedDepartment}`
-                            : 'Lütfen bir bölüm seçiniz'}
-                    </p>
+                    <Space size={[0, 8]} wrap>
+                        {selectedDepartments.map((dept, index) => (
+                            <Tag
+                                key={`${dept.faculty}-${dept.department}`}
+                                color={activeDepartment &&
+                                    activeDepartment.faculty === dept.faculty &&
+                                    activeDepartment.department === dept.department
+                                    ? 'blue'
+                                    : 'default'}
+                                style={{
+                                    padding: '8px',
+                                    margin: '4px',
+                                    cursor: 'pointer'
+                                }}
+                                onClick={() => handleDepartmentClick(dept)}
+                                closable
+                                onClose={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleRemoveDepartment(dept);
+                                }}
+                            >
+                                {`${dept.faculty} - ${dept.department}`}
+                            </Tag>
+                        ))}
+                    </Space>
                 </Card>
             )}
+
+            <Modal
+                title="Bölüm Silme Onayı"
+                open={departmentToDelete !== null}
+                onOk={confirmDelete}
+                onCancel={cancelDelete}
+                okText="Sil"
+                cancelText="İptal"
+                okButtonProps={{ danger: true }}
+            >
+                <p>
+                    {departmentToDelete && `${departmentToDelete.faculty} - ${departmentToDelete.department} bölümünü silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.`}
+                </p>
+            </Modal>
         </div>
     );
 };

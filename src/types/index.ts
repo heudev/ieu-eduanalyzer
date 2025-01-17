@@ -2,54 +2,45 @@ export type ThemeMode = 'light' | 'dark';
 
 export type LetterGrade = 'AA' | 'BA' | 'BB' | 'CB' | 'CC' | 'DC' | 'DD' | 'FD' | 'FF' | 'NA';
 
-export type CourseStatus = 'PASSED' | 'FAILED' | 'TAKING' | 'NOT TAKEN';
+export type CourseStatus = 'TAKING' | 'NOT TAKEN';
 
 export interface Course {
     id: string;
-    name: string;
     code: string;
+    name: string;
     credits: number;
     letterGrade: LetterGrade;
     status: CourseStatus;
     semester: string;
-    year?: number;
 }
 
-export interface CourseStats {
-    gpa: number;
-    passedCourses: number;
-    failedCourses: number;
-    activeCourses: number;
-    totalCredits: number;
-    completedCredits: number;
-}
-
-export interface CourseState {
-    courses: Course[];
-    selectedFaculty: string | null;
-    selectedDepartment: string | null;
-    stats: CourseStats;
-    theme: ThemeMode;
-    loading: boolean;
-    error: string | null;
+export interface Faculty {
+    faculty: string;
+    departments: Department[];
 }
 
 export interface Department {
-    id: string;
-    name: string;
-    facultyId: string;
     department: string;
     courses: Course[];
 }
 
-export interface Faculty {
-    id: string;
-    name: string;
+export interface DepartmentData {
     faculty: string;
-    image: string;
-    departments: Department[];
+    department: string;
+    courses: Course[];
 }
 
 export interface RootState {
-    course: CourseState;
+    course: {
+        faculty: string | null;
+        department: string | null;
+        courses: Course[];
+        departments: DepartmentData[];
+        theme: ThemeMode;
+        stats: {
+            totalCredits: number;
+            completedCredits: number;
+            gpa: number;
+        };
+    };
 } 
