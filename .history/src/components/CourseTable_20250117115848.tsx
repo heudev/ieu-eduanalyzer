@@ -314,12 +314,14 @@ const CourseTable: React.FC = () => {
                         rules={[{ required: true, message: 'Lütfen dönemi seçin' }]}
                     >
                         <Select>
-                            {uniqueSemesters.map(semester => (
-                                <Option key={semester} value={semester}>{semester}</Option>
-                            ))}
-                            {uniqueSemesters.length === 0 && (
-                                <Option value="1. Dönem">1. Dönem</Option>
-                            )}
+                            <Option value="1. Dönem">1. Dönem</Option>
+                            <Option value="2. Dönem">2. Dönem</Option>
+                            <Option value="3. Dönem">3. Dönem</Option>
+                            <Option value="4. Dönem">4. Dönem</Option>
+                            <Option value="5. Dönem">5. Dönem</Option>
+                            <Option value="6. Dönem">6. Dönem</Option>
+                            <Option value="7. Dönem">7. Dönem</Option>
+                            <Option value="8. Dönem">8. Dönem</Option>
                         </Select>
                     </Form.Item>
                 </Form>

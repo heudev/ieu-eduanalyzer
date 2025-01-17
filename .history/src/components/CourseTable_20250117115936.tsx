@@ -91,6 +91,7 @@ const CourseTable: React.FC = () => {
                 name: values.name,
                 credits: values.credits,
                 semester: values.semester,
+                year: values.year,
                 letterGrade: 'NA',
                 status: 'NOT_TAKEN'
             };
@@ -311,16 +312,16 @@ const CourseTable: React.FC = () => {
                     <Form.Item
                         name="semester"
                         label="Dönem"
-                        rules={[{ required: true, message: 'Lütfen dönemi seçin' }]}
+                        rules={[{ required: true, message: 'Lütfen dönemi girin' }]}
                     >
-                        <Select>
-                            {uniqueSemesters.map(semester => (
-                                <Option key={semester} value={semester}>{semester}</Option>
-                            ))}
-                            {uniqueSemesters.length === 0 && (
-                                <Option value="1. Dönem">1. Dönem</Option>
-                            )}
-                        </Select>
+                        <Input />
+                    </Form.Item>
+                    <Form.Item
+                        name="year"
+                        label="Yıl"
+                        rules={[{ required: true, message: 'Lütfen yılı girin' }]}
+                    >
+                        <InputNumber min={1900} max={2100} />
                     </Form.Item>
                 </Form>
             </Modal>
