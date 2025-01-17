@@ -30,7 +30,7 @@ const CourseTable: React.FC = () => {
     const handleGradeChange = useCallback((courseId: string, letterGrade: LetterGrade) => {
         const courseToUpdate = courses.find(course => course.id === courseId);
         if (!courseToUpdate) {
-            message.error('Ders bulunamadı');
+            message.error('Course not found');
             return;
         }
 
@@ -46,7 +46,7 @@ const CourseTable: React.FC = () => {
     const handleStatusChange = useCallback((courseId: string, status: CourseStatus) => {
         const courseToUpdate = courses.find(course => course.id === courseId);
         if (!courseToUpdate) {
-            message.error('Ders bulunamadı');
+            message.error('Course not found');
             return;
         }
 
@@ -287,8 +287,9 @@ const CourseTable: React.FC = () => {
                         columns={columns}
                         dataSource={courses.filter(course => course.semester === semester)}
                         rowKey="id"
-                        className="bg-white rounded-lg shadow"
+                        className="bg-white rounded-lg shadow hover:shadow-xl"
                         pagination={false}
+                        rowHoverable={false}
                         rowClassName={(record) => {
                             if ((record.letterGrade as LetterGrade) === 'FF' || (record.letterGrade as LetterGrade) === 'FD') {
                                 return 'bg-red-200';

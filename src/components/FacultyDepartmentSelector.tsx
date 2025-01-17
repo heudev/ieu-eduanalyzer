@@ -25,7 +25,6 @@ const FacultyDepartmentSelector: React.FC = () => {
     const [departmentToDelete, setDepartmentToDelete] = useState<SavedDepartment | null>(null);
     const dispatch = useDispatch();
 
-    // LocalStorage'dan verileri yükle
     useEffect(() => {
         const savedDepartments = localStorage.getItem(STORAGE_KEY);
         const savedActiveDepartment = localStorage.getItem(ACTIVE_DEPARTMENT_KEY);
@@ -46,7 +45,6 @@ const FacultyDepartmentSelector: React.FC = () => {
         }
     }, []);
 
-    // Değişiklikleri LocalStorage'a kaydet
     useEffect(() => {
         if (selectedDepartments.length > 0) {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(selectedDepartments));
@@ -159,7 +157,7 @@ const FacultyDepartmentSelector: React.FC = () => {
         }
 
         setDepartmentToDelete(null);
-        message.success(`${deptToRemove.faculty} - ${deptToRemove.department} bölümü başarıyla silindi.`);
+        message.success(`${deptToRemove.faculty} - ${deptToRemove.department} department has been successfully deleted.`);
     };
 
     const cancelDelete = () => {
@@ -245,18 +243,19 @@ const FacultyDepartmentSelector: React.FC = () => {
             )}
 
             <Modal
-                title="Bölüm Silme Onayı"
+                title="Department Deletion Confirmation"
                 open={departmentToDelete !== null}
                 onOk={confirmDelete}
                 onCancel={cancelDelete}
-                okText="Sil"
-                cancelText="İptal"
+                okText="Delete"
+                cancelText="Cancel"
                 okButtonProps={{ danger: true }}
             >
                 <p>
-                    {departmentToDelete && `${departmentToDelete.faculty} - ${departmentToDelete.department} bölümünü silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.`}
+                    {departmentToDelete && `Are you sure you want to delete the ${departmentToDelete.faculty} - ${departmentToDelete.department} department? This action cannot be undone.`}
                 </p>
             </Modal>
+
         </div>
     );
 };
