@@ -216,7 +216,7 @@ const FacultyDepartmentSelector: React.FC = () => {
             {selectedDepartments.length > 0 && (
                 <Card
                     title="Added Departments"
-                    className="mt-4"
+                    className="mt-4 overflow-x-auto"
                 >
                     <Space size={[0, 8]} wrap>
                         {selectedDepartments.map((dept) => (

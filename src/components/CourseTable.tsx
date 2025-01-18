@@ -181,12 +181,14 @@ const CourseTable: React.FC = () => {
         {
             title: 'Code',
             dataIndex: 'code',
-            key: 'code'
+            key: 'code',
+            width: 120,
         },
         {
             title: 'Name',
             dataIndex: 'name',
             key: 'name',
+            width: 400,
             render: (name: string) => {
                 const truncatedName = name.length > MAX_COURSE_NAME_LENGTH
                     ? `${name.substring(0, MAX_COURSE_NAME_LENGTH)}...`
@@ -201,17 +203,20 @@ const CourseTable: React.FC = () => {
         {
             title: 'Credit',
             dataIndex: 'credits',
-            key: 'credits'
+            key: 'credits',
+            width: 70,
         },
-        {
+        /* {
             title: 'Semester',
             dataIndex: 'semester',
-            key: 'semester'
-        },
+            key: 'semester',
+            width: 200,
+        }, */
         {
             title: 'Letter Grade',
             dataIndex: 'letterGrade',
             key: 'letterGrade',
+            width: 120,
             render: (_: LetterGrade | undefined, record: Course) => (
                 <Select
                     value={record.letterGrade || 'NA'}
@@ -233,6 +238,7 @@ const CourseTable: React.FC = () => {
             title: 'Status',
             dataIndex: 'status',
             key: 'status',
+            width: 100,
             render: (_: CourseStatus | undefined, record: Course) => (
                 <Select
                     value={record.status || 'NOT TAKING'}
@@ -250,6 +256,7 @@ const CourseTable: React.FC = () => {
         {
             title: 'Actions',
             key: 'actions',
+            width: 100,
             render: (_: any, record: Course) => (
                 <Space>
                     <Button
@@ -288,41 +295,43 @@ const CourseTable: React.FC = () => {
                 </Space>
             </div>
 
-            {uniqueSemesters.map(semester => (
-                <div key={semester} className="mb-8">
-                    <h3 className="text-lg font-semibold mb-2 flex justify-between items-center">
-                        <div className='text-gray-700 flex items-center'>
-                            <Tooltip title="This is the average grade for the semester">
-                                <CompassOutlined className="ml-2 mr-2" />
-                            </Tooltip>
-                            {semester}
+            <div className='space-y-10 overflow-x-auto'>
+                {uniqueSemesters.map(semester => (
+                    <div key={semester} className="mb-8">
+                        <div className="text-lg font-semibold mb-2 flex justify-between items-center">
+                            <div className='text-gray-700 flex items-center'>
+                                <Tooltip title="This is the average grade for the semester">
+                                    <CompassOutlined className="ml-2 mr-2" />
+                                </Tooltip>
+                                {semester}
+                            </div>
+                            <Tag icon={<TrophyOutlined />} color="success">
+                                Semester Average: {calculateSemesterAverage(courses.filter(course => course.semester === semester))}
+                            </Tag>
                         </div>
-                        <Tag icon={<TrophyOutlined />} color="success">
-                            Semester Average: {calculateSemesterAverage(courses.filter(course => course.semester === semester))}
-                        </Tag>
-                    </h3>
-                    <Table
-                        columns={columns}
-                        dataSource={courses.filter(course => course.semester === semester)}
-                        rowKey="id"
-                        className={`mb-10 ${semester.includes("Fall") ? "bg-gray-100" : "bg-gray-100"} rounded-lg shadow hover:shadow-lg`}
-                        pagination={false}
-                        rowHoverable={false}
-                        rowClassName={(record) => {
-                            if (record.status === 'TAKING') {
-                                return 'bg-orange-200';
-                            }
-                            else if ((record.letterGrade as LetterGrade) === 'FF' || (record.letterGrade as LetterGrade) === 'FD') {
-                                return 'bg-red-200';
-                            }
-                            else if (record.letterGrade !== 'NA' && record.letterGrade !== 'FD' && record.letterGrade !== 'FF') {
-                                return 'bg-green-100';
-                            }
-                            return '';
-                        }}
-                    />
-                </div>
-            ))}
+                        <Table
+                            columns={columns}
+                            dataSource={courses.filter(course => course.semester === semester)}
+                            rowKey="id"
+                            className={`${semester.includes("Fall") ? "bg-gray-100" : "bg-gray-100"} rounded-lg shadow hover:shadow-lg`}
+                            pagination={false}
+                            rowHoverable={false}
+                            rowClassName={(record) => {
+                                if (record.status === 'TAKING') {
+                                    return 'bg-orange-200';
+                                }
+                                else if ((record.letterGrade as LetterGrade) === 'FF' || (record.letterGrade as LetterGrade) === 'FD') {
+                                    return 'bg-red-200';
+                                }
+                                else if (record.letterGrade !== 'NA' && record.letterGrade !== 'FD' && record.letterGrade !== 'FF') {
+                                    return 'bg-green-100';
+                                }
+                                return '';
+                            }}
+                        />
+                    </div>
+                ))}
+            </div>
 
             <Modal
                 title="Add New Course"

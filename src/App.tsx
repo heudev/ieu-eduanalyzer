@@ -36,7 +36,7 @@ const AppContent: React.FC = () => {
         </div>
       </Header>
       <Content className="p-6">
-        <div className="max-w-7xl mx-auto space-y-5">
+        <div className="max-w-5xl flex flex-col justify-center mx-auto space-y-5">
           <Card
             title="Department Selection"
             className={`shadow-sm`}
