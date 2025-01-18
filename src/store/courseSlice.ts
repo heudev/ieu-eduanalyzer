@@ -159,6 +159,18 @@ const courseSlice = createSlice({
         },
         calculateStats: (state) => {
             state.stats = computeCourseStats(state.courses);
+        },
+        removeDepartment: (state, action: PayloadAction<{ faculty: string; department: string }>) => {
+            state.departments = state.departments.filter(
+                d => !(d.faculty === action.payload.faculty && d.department === action.payload.department)
+            );
+
+            if (state.faculty === action.payload.faculty && state.department === action.payload.department) {
+                state.faculty = null;
+                state.department = null;
+                state.courses = [];
+                state.stats = computeCourseStats([]);
+            }
         }
     }
 });
@@ -169,6 +181,7 @@ export const {
     addCourse,
     deleteCourse,
     calculateStats,
+    removeDepartment,
 } = courseSlice.actions;
 
-export default courseSlice.reducer; 
+export default courseSlice.reducer;

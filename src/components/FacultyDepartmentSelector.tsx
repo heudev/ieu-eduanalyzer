@@ -3,7 +3,7 @@ import { Select, Card, Row, Col, Tag, Space, Modal, message } from 'antd';
 import { useDispatch } from 'react-redux';
 import { LetterGrade, CourseStatus } from '../types';
 import departmentsData from '../data/departments.json';
-import { setSelectedFacultyAndDepartment } from '../store/courseSlice';
+import { setSelectedFacultyAndDepartment, removeDepartment } from '../store/courseSlice';
 import { v4 as uuidv4 } from 'uuid';
 
 const { Option } = Select;
@@ -130,6 +130,11 @@ const FacultyDepartmentSelector: React.FC = () => {
         if (!departmentToDelete) return;
 
         const deptToRemove = departmentToDelete;
+
+        dispatch(removeDepartment({
+            faculty: deptToRemove.faculty,
+            department: deptToRemove.department
+        }));
 
         setSelectedDepartments(prev => {
             const updatedDepts = prev.filter(d =>
