@@ -17,7 +17,7 @@ interface CourseState {
         completedCredits: number;
         gpa: number;
         activeCourses: number;
-
+        remainingCourses: number;
     };
 }
 
@@ -47,6 +47,7 @@ const computeCourseStats = (courses: Course[]) => {
     const activeCourses = courses.filter(c => c.status === 'TAKING').length;
     const passedCourses = completedCourses.filter(c => (c.letterGrade !== 'FF' && c.letterGrade !== 'FD') && c.status !== "TAKING").length;
     const failedCourses = completedCourses.filter(c => (c.letterGrade === 'FF' || c.letterGrade === 'FD') && c.status !== "TAKING").length;
+    const remainingCourses = courses.filter(c => c.status !== 'TAKING' && c.letterGrade === 'NA').length;
 
     return {
         totalCredits,
@@ -54,7 +55,8 @@ const computeCourseStats = (courses: Course[]) => {
         gpa,
         activeCourses,
         passedCourses,
-        failedCourses
+        failedCourses,
+        remainingCourses
     };
 };
 
@@ -67,7 +69,8 @@ const initialState: CourseState = {
         gpa: 0,
         activeCourses: 0,
         totalCredits: 0,
-        completedCredits: 0
+        completedCredits: 0,
+        remainingCourses: 0
     }
 };
 

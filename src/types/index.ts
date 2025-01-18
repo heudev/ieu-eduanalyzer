@@ -41,6 +41,7 @@ export interface RootState {
             totalCredits: number;
             completedCredits: number;
             gpa: number;
+            remainingCourses: number;
         };
     };
 } 

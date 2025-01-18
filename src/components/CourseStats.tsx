@@ -74,6 +74,13 @@ const CourseStats: React.FC = () => {
             icon: <PercentageOutlined />,
             color: '#1890ff',
             tooltip: 'Percentage of courses successfully completed'
+        },
+        {
+            title: 'Remaining Courses',
+            value: stats.remainingCourses,
+            icon: <ExceptionOutlined />,
+            color: '#eb2f96',
+            tooltip: 'Number of courses yet to be taken'
         }
     ], [stats]);
 
@@ -114,4 +121,4 @@ const CourseStats: React.FC = () => {
     );
 };
 
-export default React.memo(CourseStats); 
+export default React.memo(CourseStats);
