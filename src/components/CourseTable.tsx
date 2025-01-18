@@ -175,6 +175,8 @@ const CourseTable: React.FC = () => {
         });
     }, [dispatch, editForm, editingCourse]);
 
+    const MAX_COURSE_NAME_LENGTH = 50;
+
     const columns = useMemo(() => [
         {
             title: 'Code',
@@ -184,7 +186,17 @@ const CourseTable: React.FC = () => {
         {
             title: 'Name',
             dataIndex: 'name',
-            key: 'name'
+            key: 'name',
+            render: (name: string) => {
+                const truncatedName = name.length > MAX_COURSE_NAME_LENGTH
+                    ? `${name.substring(0, MAX_COURSE_NAME_LENGTH)}...`
+                    : name;
+                return (
+                    <Tooltip title={name} placement="topLeft">
+                        <span>{truncatedName}</span>
+                    </Tooltip>
+                );
+            }
         },
         {
             title: 'Credit',
@@ -204,7 +216,7 @@ const CourseTable: React.FC = () => {
                 <Select
                     value={record.letterGrade || 'NA'}
                     onChange={(value: LetterGrade) => handleGradeChange(record.id, value)}
-                    className={`w-24 ${record.letterGrade === 'FF' || record.letterGrade === 'FD'
+                    className={`!w-20 ${record.letterGrade === 'FF' || record.letterGrade === 'FD'
                         ? 'text-gray-500'
                         : record.letterGrade !== 'NA'
                             ? 'text-green-600 font-semibold'
@@ -225,7 +237,7 @@ const CourseTable: React.FC = () => {
                 <Select
                     value={record.status || 'NOT TAKING'}
                     onChange={(value: CourseStatus) => handleStatusChange(record.id, value)}
-                    className="w-32"
+                    className="!w-32"
                 >
                     {courseStatuses.map(status => (
                         <Option key={status} value={status}>

@@ -26,6 +26,26 @@ const CourseStats: React.FC = () => {
             tooltip: 'Grade Point Average'
         },
         {
+            title: 'Total Credits',
+            value: stats.totalCredits,
+            icon: <BookOutlined />,
+            tooltip: 'Total number of credits'
+        },
+        {
+            title: 'Completed Credits',
+            value: stats.completedCredits,
+            icon: <CheckSquareOutlined />,
+            color: '#3f8600',
+            tooltip: 'Number of successfully completed credits'
+        },
+        {
+            title: 'Remaining Credits',
+            value: stats.totalCredits - stats.completedCredits,
+            icon: <ExceptionOutlined />,
+            color: '#faad14',
+            tooltip: 'Number of credits remaining for graduation'
+        },
+        {
             title: 'Passed Courses',
             value: stats.passedCourses,
             icon: <CheckCircleOutlined />,
@@ -47,24 +67,11 @@ const CourseStats: React.FC = () => {
             tooltip: 'Number of courses currently being taken'
         },
         {
-            title: 'Total Credits',
-            value: stats.totalCredits,
-            icon: <BookOutlined />,
-            tooltip: 'Total number of credits'
-        },
-        {
-            title: 'Completed Credits',
-            value: stats.completedCredits,
-            icon: <CheckSquareOutlined />,
-            color: '#3f8600',
-            tooltip: 'Number of successfully completed credits'
-        },
-        {
-            title: 'Remaining Credits',
-            value: stats.totalCredits - stats.completedCredits,
+            title: 'Remaining Courses',
+            value: stats.remainingCourses,
             icon: <ExceptionOutlined />,
-            color: '#faad14',
-            tooltip: 'Number of credits remaining for graduation'
+            color: '#eb2f96',
+            tooltip: 'Number of courses yet to be taken'
         },
         {
             title: 'Pass Rate',
@@ -75,13 +82,6 @@ const CourseStats: React.FC = () => {
             color: '#1890ff',
             tooltip: 'Percentage of courses successfully completed'
         },
-        {
-            title: 'Remaining Courses',
-            value: stats.remainingCourses,
-            icon: <ExceptionOutlined />,
-            color: '#eb2f96',
-            tooltip: 'Number of courses yet to be taken'
-        }
     ], [stats]);
 
     return (
