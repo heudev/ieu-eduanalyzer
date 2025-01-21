@@ -175,7 +175,7 @@ const FacultyDepartmentSelector: React.FC = () => {
                 <Col xs={24} md={12}>
                     <Card
                         title={"Faculty Selection"}
-                        className="h-full !text-white"
+                        className="h-full !text-white shadow"
                     >
                         <Select
                             placeholder="Select a faculty"
@@ -194,7 +194,7 @@ const FacultyDepartmentSelector: React.FC = () => {
                 <Col xs={24} md={12}>
                     <Card
                         title="Department Selection"
-                        className="h-full"
+                        className="h-full shadow"
                     >
                         <Select
                             placeholder="Select a department"
@@ -216,7 +216,7 @@ const FacultyDepartmentSelector: React.FC = () => {
             {selectedDepartments.length > 0 && (
                 <Card
                     title="Added Departments"
-                    className="mt-4 overflow-x-auto"
+                    className="mt-4 overflow-x-auto shadow"
                 >
                     <Space size={[0, 8]} wrap>
                         {selectedDepartments.map((dept) => (

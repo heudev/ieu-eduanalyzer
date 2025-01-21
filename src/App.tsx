@@ -35,23 +35,23 @@ const AppContent: React.FC = () => {
           </Title>
         </div>
       </Header>
-      <Content className="p-6">
+      <Content className="p-6 bg-[#F0F2F5]">
         <div className="max-w-5xl flex flex-col justify-center mx-auto space-y-5">
           <Card
             title="Department Selection"
-            className={`shadow-sm`}
+            className={`shadow`}
           >
             <FacultyDepartmentSelector />
           </Card>
           <Card
             title="Course Statistics"
-            className={`shadow-sm`}
+            className={`shadow`}
           >
             <CourseStats />
           </Card>
           <Card
             title="Course Management"
-            className={`shadow-sm`}
+            className={`shadow`}
           >
             <CourseTable />
           </Card>

@@ -90,7 +90,7 @@ const CourseStats: React.FC = () => {
                 <Col xs={24} sm={12} md={8} lg={6} key={index}>
                     <Tooltip title={item.tooltip}>
                         <Card
-                            className="text-center hover:shadow-lg transition-shadow duration-300"
+                            className="text-center shadow hover:shadow-xl transition-shadow duration-300"
                         >
                             <div className="flex items-center justify-center mb-2">
                                 <span

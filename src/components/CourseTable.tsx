@@ -313,9 +313,10 @@ const CourseTable: React.FC = () => {
                             columns={columns}
                             dataSource={courses.filter(course => course.semester === semester)}
                             rowKey="id"
-                            className={`${semester.includes("Fall") ? "bg-gray-100" : "bg-gray-100"} rounded-lg shadow hover:shadow-lg`}
+                            className={`${semester.includes("Fall") ? "bg-gray-100" : "bg-gray-100"} rounded-lg shadow p-1.5`}
                             pagination={false}
                             rowHoverable={false}
+                            size='small'
                             rowClassName={(record) => {
                                 if (record.status === 'TAKING') {
                                     return 'bg-orange-200';
@@ -373,9 +374,6 @@ const CourseTable: React.FC = () => {
                             {uniqueSemesters.map(semester => (
                                 <Option key={semester} value={semester}>{semester}</Option>
                             ))}
-                            {uniqueSemesters.length === 0 && (
-                                <Option value="1. Semester">1. Semester</Option>
-                            )}
                         </Select>
                     </Form.Item>
                 </Form>
