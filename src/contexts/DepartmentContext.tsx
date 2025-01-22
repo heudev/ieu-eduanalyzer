@@ -23,24 +23,14 @@ export const DepartmentProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged(async (user) => {
             if (user) {
-                // Kullanıcı giriş yaptığında Firebase'den departmanları yükle
                 try {
                     const userDepartments = await departmentService.getUserDepartments(user.uid);
                     setDepartments(userDepartments);
-
-                    // Local storage'daki geçici departmanları Firebase'e aktar
-                    const tempDepartments = departmentService.getDepartmentsFromLocalStorage();
-                    for (const dept of tempDepartments) {
-                        await departmentService.createDepartment(user.uid, { name: dept.name });
-                    }
-                    departmentService.clearLocalStorageDepartments();
                 } catch (error) {
                     console.error('Departmanlar yüklenirken hata:', error);
                 }
             } else {
-                // Kullanıcı çıkış yaptığında local storage'dan departmanları yükle
-                const localDepartments = departmentService.getDepartmentsFromLocalStorage();
-                setDepartments(localDepartments);
+                setDepartments([]);
             }
             setIsLoading(false);
         });
@@ -53,16 +43,6 @@ export const DepartmentProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         if (user) {
             const newDepartment = await departmentService.createDepartment(user.uid, input);
             setDepartments([...departments, newDepartment]);
-        } else {
-            const tempDepartment: Department = {
-                id: Date.now().toString(),
-                ...input,
-                userId: 'temp',
-                createdAt: new Date(),
-                updatedAt: new Date()
-            };
-            departmentService.saveDepartmentToLocalStorage(tempDepartment);
-            setDepartments([...departments, tempDepartment]);
         }
     };
 

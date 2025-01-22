@@ -11,9 +11,6 @@ import { useAuth } from '../contexts/AuthContext';
 
 const { Option } = Select;
 
-const STORAGE_KEY = 'selectedDepartments';
-const ACTIVE_DEPARTMENT_KEY = 'activeDepartment';
-
 interface SavedDepartment {
     faculty: string;
     department: string;
@@ -30,54 +27,40 @@ const FacultyDepartmentSelector: React.FC = () => {
     const { currentUser } = useAuth();
 
     useEffect(() => {
-        const loadDepartments = async () => {
-            if (!currentUser) return;
+        if (currentUser) {
+            loadDepartmentsFromFirestore();
+        }
+    }, [currentUser]);
 
-            const departmentsRef = collection(db, 'departments');
-            const q = query(departmentsRef, where('userId', '==', currentUser.uid));
+    const loadDepartmentsFromFirestore = async () => {
+        if (!currentUser) return;
 
-            try {
-                const querySnapshot = await getDocs(q);
-                const departments: SavedDepartment[] = [];
-                querySnapshot.forEach((doc) => {
-                    departments.push(doc.data() as SavedDepartment);
-                });
+        const departmentsRef = collection(db, 'departments');
+        const q = query(departmentsRef, where('userId', '==', currentUser.uid));
 
-                setSelectedDepartments(departments);
+        try {
+            const querySnapshot = await getDocs(q);
+            const departments: SavedDepartment[] = [];
+            querySnapshot.forEach((doc) => {
+                departments.push(doc.data() as SavedDepartment);
+            });
 
-                if (departments.length > 0) {
-                    const active = departments[0];
-                    setActiveDepartment(active);
-                    dispatch(setSelectedFacultyAndDepartment({
-                        faculty: active.faculty,
-                        department: active.department,
-                        courses: active.courses
-                    }));
-                }
-            } catch (error) {
-                console.error('Error loading departments:', error);
-                message.error('Departmanlar yüklenirken bir hata oluştu');
+            setSelectedDepartments(departments);
+
+            if (departments.length > 0) {
+                const active = departments[0];
+                setActiveDepartment(active);
+                dispatch(setSelectedFacultyAndDepartment({
+                    faculty: active.faculty,
+                    department: active.department,
+                    courses: active.courses
+                }));
             }
-        };
-
-        loadDepartments();
-    }, [currentUser, dispatch]);
-
-    useEffect(() => {
-        if (selectedDepartments.length > 0) {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(selectedDepartments));
-        } else {
-            localStorage.removeItem(STORAGE_KEY);
+        } catch (error) {
+            console.error('Error loading departments:', error);
+            message.error('Departmanlar yüklenirken bir hata oluştu');
         }
-    }, [selectedDepartments]);
-
-    useEffect(() => {
-        if (activeDepartment) {
-            localStorage.setItem(ACTIVE_DEPARTMENT_KEY, JSON.stringify(activeDepartment));
-        } else {
-            localStorage.removeItem(ACTIVE_DEPARTMENT_KEY);
-        }
-    }, [activeDepartment]);
+    };
 
     const faculties = useMemo(() =>
         [...new Set(departmentsData.map(item => item.faculty))],

@@ -3,7 +3,6 @@ import { Layout, Typography, Card, Select } from 'antd';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import courseReducer from './store/courseSlice';
-import { localStorageMiddleware, loadState } from './store/middleware/localStorage';
 import { firebaseSyncMiddleware, loadFirebaseState } from './store/middleware/firebaseSync';
 import { auth } from './firebase';
 import FacultyDepartmentSelector from './components/FacultyDepartmentSelector';
@@ -17,15 +16,12 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 const { Header, Content } = Layout;
 const { Title } = Typography;
 
-const preloadedState = loadState();
-
 const store = configureStore({
   reducer: {
     course: courseReducer,
   },
-  preloadedState,
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(localStorageMiddleware, firebaseSyncMiddleware),
+    getDefaultMiddleware().concat(firebaseSyncMiddleware),
 });
 
 const AppContent: React.FC = () => {

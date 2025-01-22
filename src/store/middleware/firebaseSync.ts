@@ -1,4 +1,4 @@
-import { Middleware, Action } from '@reduxjs/toolkit';
+import { Middleware, Action, AnyAction } from '@reduxjs/toolkit';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../../firebase';
 import { RootState } from '../../types';
@@ -24,7 +24,7 @@ export const loadFirebaseState = async (userId: string) => {
     }
 };
 
-export const syncLocalToFirebase = async (state: RootState) => {
+export const syncToFirebase = async (state: RootState) => {
     const currentUser = auth.currentUser;
     if (!currentUser) return;
 
@@ -37,30 +37,17 @@ export const syncLocalToFirebase = async (state: RootState) => {
             stats: state.course.stats
         });
     } catch (err) {
-        console.error('Local veriler Firebase\'e aktarılırken hata oluştu:', err);
+        console.error('Veriler Firebase\'e aktarılırken hata oluştu:', err);
     }
 };
 
-let isInitialSync = true;
-
-export const firebaseSyncMiddleware: Middleware = store => next => (action: Action) => {
+export const firebaseSyncMiddleware: Middleware = store => next => action => {
     const result = next(action);
     const state = store.getState() as RootState;
     const currentUser = auth.currentUser;
 
-    // Kullanıcı giriş yaptığında ve ilk senkronizasyon ise
-    if (currentUser && isInitialSync && action.type === 'course/setState') {
-        isInitialSync = false;
-        // Local storage'daki verileri Firebase'e aktar
-        const localState = store.getState() as RootState;
-        if (localState.course.departments.length > 0) {
-            syncLocalToFirebase(localState);
-        }
-    }
-
-    // Kullanıcı giriş yapmışsa ve state değişmişse Firebase'e kaydet
-    if (currentUser && !isInitialSync) {
-        syncLocalToFirebase(state);
+    if (currentUser) {
+        syncToFirebase(state);
     }
 
     return result;
