@@ -13,7 +13,6 @@ import { DepartmentProvider } from './contexts/DepartmentContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Spin } from 'antd';
 
-
 const { Header, Content } = Layout;
 const { Title } = Typography;
 

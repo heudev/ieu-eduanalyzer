@@ -3,8 +3,6 @@ import {
     getAuth,
     onAuthStateChanged,
     User,
-    signInWithEmailAndPassword,
-    createUserWithEmailAndPassword,
     signOut,
     GoogleAuthProvider,
     signInWithPopup
@@ -14,8 +12,6 @@ import { message } from 'antd';
 interface AuthContextType {
     currentUser: User | null;
     loading: boolean;
-    signIn: (email: string, password: string) => Promise<void>;
-    signUp: (email: string, password: string) => Promise<void>;
     signInWithGoogle: () => Promise<void>;
     logout: () => Promise<void>;
 }
@@ -31,16 +27,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const [loading, setLoading] = useState(true);
     const auth = getAuth();
 
-    const signIn = async (email: string, password: string) => {
-        try {
-            await signInWithEmailAndPassword(auth, email, password);
-            message.success('Successfully signed in');
-        } catch (error) {
-            message.error('An error occurred while signing in');
-            throw error;
-        }
-    };
-
     const signInWithGoogle = async () => {
         try {
             const provider = new GoogleAuthProvider();
@@ -52,22 +38,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         }
     };
 
-    const signUp = async (email: string, password: string) => {
-        try {
-            await createUserWithEmailAndPassword(auth, email, password);
-            message.success('Account successfully created');
-        } catch (error) {
-            message.error('An error occurred while creating account');
-            throw error;
-        }
-    };
-
     const logout = async () => {
         try {
             await signOut(auth);
-            message.success('Successfully signed out');
+            message.success('Successfully logged out');
         } catch (error) {
-            message.error('An error occurred while signing out');
+            message.error('An error occurred while logging out');
             throw error;
         }
     };
@@ -84,8 +60,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const value = {
         currentUser,
         loading,
-        signIn,
-        signUp,
         signInWithGoogle,
         logout
     };
@@ -95,4 +69,4 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             {!loading && children}
         </AuthContext.Provider>
     );
-}; 
+};

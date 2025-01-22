@@ -6,7 +6,7 @@ import departmentsData from '../data/departments.json';
 import { setSelectedFacultyAndDepartment, removeDepartment } from '../store/courseSlice';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from '../firebase';
-import { doc, setDoc, deleteDoc, collection, query, where, getDocs, updateDoc } from 'firebase/firestore';
+import { doc, setDoc, deleteDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
 import { logEvent } from 'firebase/analytics';
 import { analytics } from '../firebase';
@@ -216,56 +216,6 @@ const FacultyDepartmentSelector: React.FC = () => {
         }
     };
 
-    const updateActiveDepartment = async (dept: SavedDepartment) => {
-        if (!currentUser) return;
-
-        const departmentId = `${currentUser.uid}_${dept.faculty}_${dept.department}`;
-        const departmentRef = doc(db, 'departments', departmentId);
-
-        try {
-            const docSnap = await getDocs(query(collection(db, 'departments'),
-                where('userId', '==', currentUser.uid),
-                where('faculty', '==', dept.faculty),
-                where('department', '==', dept.department)
-            ));
-
-            if (docSnap.empty) {
-                console.log('Document does not exist, skipping update');
-                return;
-            }
-
-            await updateDoc(departmentRef, {
-                isActive: true,
-                updatedAt: new Date().toISOString()
-            });
-
-            const otherDepts = selectedDepartments.filter(
-                d => d.faculty !== dept.faculty || d.department !== dept.department
-            );
-
-            for (const otherDept of otherDepts) {
-                const otherId = `${currentUser.uid}_${otherDept.faculty}_${otherDept.department}`;
-                const otherRef = doc(db, 'departments', otherId);
-
-                const otherDocSnap = await getDocs(query(collection(db, 'departments'),
-                    where('userId', '==', currentUser.uid),
-                    where('faculty', '==', otherDept.faculty),
-                    where('department', '==', otherDept.department)
-                ));
-
-                if (!otherDocSnap.empty) {
-                    await updateDoc(otherRef, {
-                        isActive: false,
-                        updatedAt: new Date().toISOString()
-                    });
-                }
-            }
-        } catch (error) {
-            console.error('Error updating active department:', error);
-            message.error('An error occurred while updating active department');
-        }
-    };
-
     return (
         <div className="space-y-4">
             <Row gutter={[16, 16]}>
@@ -311,10 +261,7 @@ const FacultyDepartmentSelector: React.FC = () => {
             </Row>
 
             {selectedDepartments.length > 0 && (
-                <Card
-                    title="Added Departments"
-                    className="mt-4 overflow-x-auto shadow"
-                >
+                <Card title="Added Departments" className="mt-4 overflow-x-auto shadow">
                     <Space size={[0, 8]} wrap>
                         {selectedDepartments.map((dept) => (
                             <Tag

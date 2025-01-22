@@ -250,12 +250,6 @@ const CourseTable: React.FC = () => {
             key: 'credits',
             width: 70,
         },
-        /* {
-            title: 'Semester',
-            dataIndex: 'semester',
-            key: 'semester',
-            width: 200,
-        }, */
         {
             title: 'Letter Grade',
             dataIndex: 'letterGrade',

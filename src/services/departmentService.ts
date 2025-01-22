@@ -37,7 +37,7 @@ export const getUserDepartments = async (userId: string): Promise<Department[]> 
     });
 };
 
-export const updateDepartment = async (departmentId: string, userId: string, input: DepartmentInput): Promise<void> => {
+export const updateDepartment = async (departmentId: string, input: DepartmentInput): Promise<void> => {
     const docRef = doc(db, COLLECTION_NAME, departmentId);
     await updateDoc(docRef, {
         ...input,

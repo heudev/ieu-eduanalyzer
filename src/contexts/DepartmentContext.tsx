@@ -49,7 +49,7 @@ export const DepartmentProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     const updateDepartment = async (departmentId: string, input: DepartmentInput) => {
         const user = auth.currentUser;
         if (user) {
-            await departmentService.updateDepartment(departmentId, user.uid, input);
+            await departmentService.updateDepartment(departmentId, input);
             setDepartments(departments.map(dept =>
                 dept.id === departmentId ? { ...dept, ...input, updatedAt: new Date() } : dept
             ));
@@ -90,4 +90,4 @@ export const useDepartments = () => {
         throw new Error('useDepartments must be used within a DepartmentProvider');
     }
     return context;
-}; 
+};
