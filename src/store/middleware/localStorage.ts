@@ -1,43 +1,32 @@
 import { Middleware } from '@reduxjs/toolkit';
-import { RootState } from '../../types';
 
-const STORAGE_KEY = 'courseState';
-
+// Local storage'dan state'i yükle
 export const loadState = () => {
     try {
-        const serializedState = localStorage.getItem(STORAGE_KEY);
+        const serializedState = localStorage.getItem('courseState');
         if (serializedState === null) {
             return undefined;
         }
-        const state = JSON.parse(serializedState);
-        return {
-            course: {
-                ...state.course,
-                departments: state.course?.departments || []
-            }
-        };
+        return JSON.parse(serializedState);
     } catch (err) {
+        console.error('State yüklenirken hata oluştu:', err);
         return undefined;
     }
 };
 
-export const localStorageMiddleware: Middleware = store => next => action => {
-    const result = next(action);
-    const state = store.getState() as RootState;
-
+// State'i local storage'a kaydet
+export const saveState = (state: any) => {
     try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({
-            course: {
-                faculty: state.course.faculty,
-                department: state.course.department,
-                courses: state.course.courses,
-                departments: state.course.departments,
-                stats: state.course.stats
-            }
-        }));
+        const serializedState = JSON.stringify(state);
+        localStorage.setItem('courseState', serializedState);
     } catch (err) {
-        console.error('Could not save state to localStorage:', err);
+        console.error('State kaydedilirken hata oluştu:', err);
     }
+};
 
+// Redux middleware
+export const localStorageMiddleware: Middleware = (store) => (next) => (action) => {
+    const result = next(action);
+    saveState(store.getState());
     return result;
-}; 
+};

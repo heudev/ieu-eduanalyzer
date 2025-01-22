@@ -5,6 +5,9 @@ import { LetterGrade, CourseStatus } from '../types';
 import departmentsData from '../data/departments.json';
 import { setSelectedFacultyAndDepartment, removeDepartment } from '../store/courseSlice';
 import { v4 as uuidv4 } from 'uuid';
+import { db } from '../firebase';
+import { doc, setDoc, deleteDoc, collection, query, where, getDocs, updateDoc } from 'firebase/firestore';
+import { useAuth } from '../contexts/AuthContext';
 
 const { Option } = Select;
 
@@ -24,26 +27,41 @@ const FacultyDepartmentSelector: React.FC = () => {
     const [activeDepartment, setActiveDepartment] = useState<SavedDepartment | null>(null);
     const [departmentToDelete, setDepartmentToDelete] = useState<SavedDepartment | null>(null);
     const dispatch = useDispatch();
+    const { currentUser } = useAuth();
 
     useEffect(() => {
-        const savedDepartments = localStorage.getItem(STORAGE_KEY);
-        const savedActiveDepartment = localStorage.getItem(ACTIVE_DEPARTMENT_KEY);
+        const loadDepartments = async () => {
+            if (!currentUser) return;
 
-        if (savedDepartments) {
-            const departments = JSON.parse(savedDepartments);
-            setSelectedDepartments(departments);
+            const departmentsRef = collection(db, 'departments');
+            const q = query(departmentsRef, where('userId', '==', currentUser.uid));
 
-            if (savedActiveDepartment) {
-                const active = JSON.parse(savedActiveDepartment);
-                setActiveDepartment(active);
-                dispatch(setSelectedFacultyAndDepartment({
-                    faculty: active.faculty,
-                    department: active.department,
-                    courses: active.courses
-                }));
+            try {
+                const querySnapshot = await getDocs(q);
+                const departments: SavedDepartment[] = [];
+                querySnapshot.forEach((doc) => {
+                    departments.push(doc.data() as SavedDepartment);
+                });
+
+                setSelectedDepartments(departments);
+
+                if (departments.length > 0) {
+                    const active = departments[0];
+                    setActiveDepartment(active);
+                    dispatch(setSelectedFacultyAndDepartment({
+                        faculty: active.faculty,
+                        department: active.department,
+                        courses: active.courses
+                    }));
+                }
+            } catch (error) {
+                console.error('Error loading departments:', error);
+                message.error('Departmanlar yüklenirken bir hata oluştu');
             }
-        }
-    }, []);
+        };
+
+        loadDepartments();
+    }, [currentUser, dispatch]);
 
     useEffect(() => {
         if (selectedDepartments.length > 0) {
@@ -99,6 +117,7 @@ const FacultyDepartmentSelector: React.FC = () => {
                     setSelectedDepartments(prev => [...prev, newDepartment]);
                     setActiveDepartment(newDepartment);
                     dispatch(setSelectedFacultyAndDepartment(newDepartment));
+                    saveDepartmentToFirestore(newDepartment);
                 }
             }
         }
@@ -120,13 +139,14 @@ const FacultyDepartmentSelector: React.FC = () => {
             department: dept.department,
             courses: dept.courses
         }));
+        updateActiveDepartment(dept);
     };
 
     const handleRemoveDepartment = (dept: SavedDepartment) => {
         setDepartmentToDelete(dept);
     };
 
-    const confirmDelete = () => {
+    const confirmDelete = async () => {
         if (!departmentToDelete) return;
 
         const deptToRemove = departmentToDelete;
@@ -135,6 +155,8 @@ const FacultyDepartmentSelector: React.FC = () => {
             faculty: deptToRemove.faculty,
             department: deptToRemove.department
         }));
+
+        await deleteDepartmentFromFirestore(deptToRemove.faculty, deptToRemove.department);
 
         setSelectedDepartments(prev => {
             const updatedDepts = prev.filter(d =>
@@ -162,11 +184,73 @@ const FacultyDepartmentSelector: React.FC = () => {
         }
 
         setDepartmentToDelete(null);
-        message.success(`${deptToRemove.faculty} - ${deptToRemove.department} department has been successfully deleted.`);
+        message.success(`${deptToRemove.faculty} - ${deptToRemove.department} bölümü başarıyla silindi.`);
     };
 
     const cancelDelete = () => {
         setDepartmentToDelete(null);
+    };
+
+    const saveDepartmentToFirestore = async (department: SavedDepartment) => {
+        if (!currentUser) return;
+
+        const departmentId = `${currentUser.uid}_${department.faculty}_${department.department}`;
+        const departmentRef = doc(db, 'departments', departmentId);
+
+        try {
+            await setDoc(departmentRef, {
+                ...department,
+                userId: currentUser.uid,
+                updatedAt: new Date().toISOString()
+            });
+        } catch (error) {
+            console.error('Error saving department:', error);
+            message.error('Departman kaydedilirken bir hata oluştu');
+        }
+    };
+
+    const deleteDepartmentFromFirestore = async (faculty: string, department: string) => {
+        if (!currentUser) return;
+
+        const departmentId = `${currentUser.uid}_${faculty}_${department}`;
+        const departmentRef = doc(db, 'departments', departmentId);
+
+        try {
+            await deleteDoc(departmentRef);
+        } catch (error) {
+            console.error('Error deleting department:', error);
+            message.error('Departman silinirken bir hata oluştu');
+        }
+    };
+
+    const updateActiveDepartment = async (dept: SavedDepartment) => {
+        if (!currentUser) return;
+
+        const departmentId = `${currentUser.uid}_${dept.faculty}_${dept.department}`;
+        const departmentRef = doc(db, 'departments', departmentId);
+
+        try {
+            await updateDoc(departmentRef, {
+                isActive: true,
+                updatedAt: new Date().toISOString()
+            });
+
+            const otherDepts = selectedDepartments.filter(
+                d => d.faculty !== dept.faculty || d.department !== dept.department
+            );
+
+            for (const otherDept of otherDepts) {
+                const otherId = `${currentUser.uid}_${otherDept.faculty}_${otherDept.department}`;
+                const otherRef = doc(db, 'departments', otherId);
+                await updateDoc(otherRef, {
+                    isActive: false,
+                    updatedAt: new Date().toISOString()
+                });
+            }
+        } catch (error) {
+            console.error('Error updating active department:', error);
+            message.error('Aktif departman güncellenirken bir hata oluştu');
+        }
     };
 
     return (

@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { Course, LetterGrade, CourseStatus, RootState } from '../types';
 import { updateCourse, addCourse, calculateStats, deleteCourse } from '../store/courseSlice';
 import { PlusOutlined, DownloadOutlined, DeleteOutlined, EditOutlined, TrophyOutlined, CompassOutlined } from '@ant-design/icons';
+import { useAuth } from '../contexts/AuthContext';
 const { Option } = Select;
 
 const CourseTable: React.FC = () => {
@@ -14,6 +15,7 @@ const CourseTable: React.FC = () => {
     const [editingCourse, setEditingCourse] = useState<Course | null>(null);
     const [form] = Form.useForm();
     const [editForm] = Form.useForm();
+    const { currentUser } = useAuth();
 
     const letterGrades: LetterGrade[] = useMemo(() =>
         ['AA', 'BA', 'BB', 'CB', 'CC', 'DC', 'DD', 'FD', 'FF', 'NA'],
@@ -28,7 +30,7 @@ const CourseTable: React.FC = () => {
     const handleGradeChange = useCallback((courseId: string, letterGrade: LetterGrade) => {
         const courseToUpdate = courses.find(course => course.id === courseId);
         if (!courseToUpdate) {
-            message.error('Course not found');
+            message.error('Ders bulunamadı');
             return;
         }
 
@@ -36,15 +38,16 @@ const CourseTable: React.FC = () => {
             courseId,
             updates: {
                 letterGrade
-            }
+            },
+            userId: currentUser?.uid
         }));
         dispatch(calculateStats());
-    }, [dispatch, courses]);
+    }, [dispatch, courses, currentUser]);
 
     const handleStatusChange = useCallback((courseId: string, status: CourseStatus) => {
         const courseToUpdate = courses.find(course => course.id === courseId);
         if (!courseToUpdate) {
-            message.error('Course not found');
+            message.error('Ders bulunamadı');
             return;
         }
 
@@ -52,24 +55,28 @@ const CourseTable: React.FC = () => {
             courseId,
             updates: {
                 status
-            }
+            },
+            userId: currentUser?.uid
         }));
         dispatch(calculateStats());
-    }, [dispatch, courses]);
+    }, [dispatch, courses, currentUser]);
 
     const handleDeleteCourse = useCallback((courseId: string) => {
         Modal.confirm({
-            title: 'Delete Course',
-            content: 'Are you sure you want to delete this course?',
-            okText: 'Yes',
-            cancelText: 'No',
+            title: 'Dersi Sil',
+            content: 'Bu dersi silmek istediğinizden emin misiniz?',
+            okText: 'Evet',
+            cancelText: 'Hayır',
             onOk: () => {
-                dispatch(deleteCourse(courseId));
+                dispatch(deleteCourse({
+                    courseId,
+                    userId: currentUser?.uid
+                }));
                 dispatch(calculateStats());
-                message.success('Course deleted successfully');
+                message.success('Ders başarıyla silindi');
             }
         });
-    }, [dispatch]);
+    }, [dispatch, currentUser]);
 
     const handleAddCourse = useCallback(() => {
         form.validateFields().then(values => {
@@ -82,13 +89,16 @@ const CourseTable: React.FC = () => {
                 letterGrade: 'NA',
                 status: 'NOT TAKING'
             };
-            dispatch(addCourse(newCourse));
+            dispatch(addCourse({
+                course: newCourse,
+                userId: currentUser?.uid
+            }));
             dispatch(calculateStats());
             setIsModalVisible(false);
             form.resetFields();
-            message.success('Course added successfully');
+            message.success('Ders başarıyla eklendi');
         });
-    }, [dispatch, form]);
+    }, [dispatch, form, currentUser]);
 
     const handleExport = useCallback(() => {
         try {
@@ -165,15 +175,16 @@ const CourseTable: React.FC = () => {
                     ...values,
                     letterGrade: editingCourse.letterGrade,
                     status: editingCourse.status
-                }
+                },
+                userId: currentUser?.uid
             }));
             dispatch(calculateStats());
             setIsEditModalVisible(false);
             setEditingCourse(null);
             editForm.resetFields();
-            message.success('Course updated successfully');
+            message.success('Ders başarıyla güncellendi');
         });
-    }, [dispatch, editForm, editingCourse]);
+    }, [dispatch, editForm, editingCourse, currentUser]);
 
     const MAX_COURSE_NAME_LENGTH = 50;
 

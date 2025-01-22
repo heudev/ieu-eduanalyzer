@@ -1,5 +1,7 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { Course, LetterGrade } from '../types';
+import { db } from '../firebase';
+import { doc, updateDoc } from 'firebase/firestore';
 
 interface DepartmentData {
     faculty: string;
@@ -74,14 +76,37 @@ const initialState: CourseState = {
     }
 };
 
+const updateFirestore = async (userId: string | null, faculty: string, department: string, courses: Course[]) => {
+    if (!userId) return;
+
+    const departmentId = `${userId}_${faculty}_${department}`;
+    const departmentRef = doc(db, 'departments', departmentId);
+
+    try {
+        await updateDoc(departmentRef, {
+            courses,
+            updatedAt: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('Error updating Firestore:', error);
+    }
+};
+
 const courseSlice = createSlice({
     name: 'course',
     initialState,
     reducers: {
+        setState: (state, action) => {
+            return {
+                ...state,
+                ...action.payload
+            };
+        },
         setSelectedFacultyAndDepartment: (state, action: PayloadAction<{
             faculty: string;
             department: string;
             courses: Course[];
+            userId?: string | null;
         }>) => {
             const existingDeptIndex = state.departments.findIndex(
                 d => d.faculty === action.payload.faculty && d.department === action.payload.department
@@ -103,10 +128,21 @@ const courseSlice = createSlice({
             }
 
             state.stats = computeCourseStats(state.courses);
+
+            // Firestore güncelleme
+            if (action.payload.userId) {
+                updateFirestore(
+                    action.payload.userId,
+                    action.payload.faculty,
+                    action.payload.department,
+                    state.courses
+                );
+            }
         },
         updateCourse: (state, action: PayloadAction<{
             courseId: string;
             updates: Partial<Course>;
+            userId?: string | null;
         }>) => {
             const courseIndex = state.courses.findIndex(c => c.id === action.payload.courseId);
             if (courseIndex !== -1) {
@@ -130,40 +166,78 @@ const courseSlice = createSlice({
                 }
 
                 state.stats = computeCourseStats(state.courses);
+
+                // Firestore güncelleme
+                if (action.payload.userId && state.faculty && state.department) {
+                    updateFirestore(
+                        action.payload.userId,
+                        state.faculty,
+                        state.department,
+                        state.courses
+                    );
+                }
             }
         },
-        addCourse: (state, action: PayloadAction<Course>) => {
-            state.courses.push(action.payload);
+        addCourse: (state, action: PayloadAction<{
+            course: Course;
+            userId?: string | null;
+        }>) => {
+            state.courses.push(action.payload.course);
 
-            // Bölüm listesine de ekle
             const deptIndex = state.departments.findIndex(
                 d => d.faculty === state.faculty && d.department === state.department
             );
             if (deptIndex !== -1) {
-                state.departments[deptIndex].courses.push(action.payload);
+                state.departments[deptIndex].courses.push(action.payload.course);
             }
 
             state.stats = computeCourseStats(state.courses);
-        },
-        deleteCourse: (state, action: PayloadAction<string>) => {
-            state.courses = state.courses.filter(course => course.id !== action.payload);
 
-            // Bölüm listesinden de sil
+            // Firestore güncelleme
+            if (action.payload.userId && state.faculty && state.department) {
+                updateFirestore(
+                    action.payload.userId,
+                    state.faculty,
+                    state.department,
+                    state.courses
+                );
+            }
+        },
+        deleteCourse: (state, action: PayloadAction<{
+            courseId: string;
+            userId?: string | null;
+        }>) => {
+            state.courses = state.courses.filter(course => course.id !== action.payload.courseId);
+
             const deptIndex = state.departments.findIndex(
                 d => d.faculty === state.faculty && d.department === state.department
             );
             if (deptIndex !== -1) {
                 state.departments[deptIndex].courses = state.departments[deptIndex].courses.filter(
-                    course => course.id !== action.payload
+                    course => course.id !== action.payload.courseId
                 );
             }
 
             state.stats = computeCourseStats(state.courses);
+
+            // Firestore güncelleme
+            if (action.payload.userId && state.faculty && state.department) {
+                updateFirestore(
+                    action.payload.userId,
+                    state.faculty,
+                    state.department,
+                    state.courses
+                );
+            }
         },
         calculateStats: (state) => {
             state.stats = computeCourseStats(state.courses);
         },
-        removeDepartment: (state, action: PayloadAction<{ faculty: string; department: string }>) => {
+        removeDepartment: (state, action: PayloadAction<{
+            faculty: string;
+            department: string;
+            userId?: string | null;
+        }>) => {
             state.departments = state.departments.filter(
                 d => !(d.faculty === action.payload.faculty && d.department === action.payload.department)
             );
@@ -179,6 +253,7 @@ const courseSlice = createSlice({
 });
 
 export const {
+    setState,
     setSelectedFacultyAndDepartment,
     updateCourse,
     addCourse,
