@@ -129,7 +129,7 @@ const courseSlice = createSlice({
 
             state.stats = computeCourseStats(state.courses);
 
-            // Firestore güncelleme
+            // Firestore update
             if (action.payload.userId) {
                 updateFirestore(
                     action.payload.userId,
@@ -167,7 +167,7 @@ const courseSlice = createSlice({
 
                 state.stats = computeCourseStats(state.courses);
 
-                // Firestore güncelleme
+                // Firestore update
                 if (action.payload.userId && state.faculty && state.department) {
                     updateFirestore(
                         action.payload.userId,
@@ -193,7 +193,7 @@ const courseSlice = createSlice({
 
             state.stats = computeCourseStats(state.courses);
 
-            // Firestore güncelleme
+            // Firestore update
             if (action.payload.userId && state.faculty && state.department) {
                 updateFirestore(
                     action.payload.userId,
@@ -220,7 +220,7 @@ const courseSlice = createSlice({
 
             state.stats = computeCourseStats(state.courses);
 
-            // Firestore güncelleme
+            // Firestore update
             if (action.payload.userId && state.faculty && state.department) {
                 updateFirestore(
                     action.payload.userId,

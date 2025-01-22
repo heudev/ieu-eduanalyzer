@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Layout, Typography, Card, Select } from 'antd';
+import { Layout, Typography, Card } from 'antd';
 import { Provider } from 'react-redux';
 import { configureStore } from '@reduxjs/toolkit';
 import courseReducer from './store/courseSlice';
 import { firebaseSyncMiddleware, loadFirebaseState } from './store/middleware/firebaseSync';
-import { auth } from './firebase';
 import FacultyDepartmentSelector from './components/FacultyDepartmentSelector';
 import CourseTable from './components/CourseTable';
 import CourseStats from './components/CourseStats';
@@ -12,6 +11,8 @@ import Auth from './components/Auth';
 import { BarChartOutlined } from '@ant-design/icons';
 import { DepartmentProvider } from './contexts/DepartmentContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { Spin } from 'antd';
+
 
 const { Header, Content } = Layout;
 const { Title } = Typography;
@@ -47,7 +48,13 @@ const AppContent: React.FC = () => {
   }, [currentUser, loading]);
 
   if (loading || isLoading) {
-    return <div>Yükleniyor...</div>;
+    return (
+      <div className="h-screen flex justify-center items-center">
+        <Spin tip="Loading" size="large">
+          <div className="p-12 rounded-md"></div>
+        </Spin>
+      </div>
+    );
   }
 
   return (
@@ -87,9 +94,56 @@ const AppContent: React.FC = () => {
               </Card>
             </>
           ) : (
-            <Card className="text-center p-8">
-              <Title level={4}>Lütfen devam etmek için giriş yapın</Title>
-            </Card>
+            <div className="space-y-8">
+              <Card className="text-center p-8 bg-gradient-to-r from-blue-500 to-purple-600 text-white">
+                <Title level={2} className="!text-white mb-4">Welcome to IEU EduAnalyzer</Title>
+                <p className="text-white text-lg mb-8">
+                  An innovative platform that simplifies course analysis and strengthens your academic planning
+                </p>
+              </Card>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card className="text-center shadow-lg hover:shadow-xl transition-shadow">
+                  <div className="text-4xl text-blue-500 mb-4">📊</div>
+                  <Title level={4}>Detailed Statistics</Title>
+                  <p>Course success rates, grade distributions and trend analysis</p>
+                </Card>
+
+                <Card className="text-center shadow-lg hover:shadow-xl transition-shadow">
+                  <div className="text-4xl text-blue-500 mb-4">🎓</div>
+                  <Title level={4}>Department Based Analysis</Title>
+                  <p>Comprehensive academic performance evaluation of all faculties and departments</p>
+                </Card>
+
+                <Card className="text-center shadow-lg hover:shadow-xl transition-shadow">
+                  <div className="text-4xl text-blue-500 mb-4">📈</div>
+                  <Title level={4}>Visual Reporting</Title>
+                  <p>Easy to understand graphics and interactive data visualizations</p>
+                </Card>
+              </div>
+
+              <Card className="bg-gray-50">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                  <div>
+                    <Title level={3}>Why IEU EduAnalyzer?</Title>
+                    <ul className="list-disc list-inside space-y-2">
+                      <li>Analyze academic performance in detail</li>
+                      <li>Track course success trends</li>
+                      <li>Make data-driven decisions</li>
+                      <li>Compare department performance</li>
+                    </ul>
+                  </div>
+                  <div className="bg-white p-4 rounded-lg shadow-inner">
+                    <img
+                      src="/demo-stats.png"
+                      alt="Demo Statistics"
+                      className="w-full rounded-lg opacity-75"
+                      onError={(e) => e.currentTarget.style.display = 'none'}
+                    />
+                  </div>
+                </div>
+              </Card>
+            </div>
           )}
         </div>
       </Content>

@@ -8,6 +8,8 @@ import { v4 as uuidv4 } from 'uuid';
 import { db } from '../firebase';
 import { doc, setDoc, deleteDoc, collection, query, where, getDocs, updateDoc } from 'firebase/firestore';
 import { useAuth } from '../contexts/AuthContext';
+import { logEvent } from 'firebase/analytics';
+import { analytics } from '../firebase';
 
 const { Option } = Select;
 
@@ -58,7 +60,7 @@ const FacultyDepartmentSelector: React.FC = () => {
             }
         } catch (error) {
             console.error('Error loading departments:', error);
-            message.error('Departmanlar yüklenirken bir hata oluştu');
+            message.error('An error occurred while loading departments');
         }
     };
 
@@ -109,10 +111,17 @@ const FacultyDepartmentSelector: React.FC = () => {
     const handleFacultyChange = (value: string) => {
         setSelectedFaculty(value);
         setSelectedDepartment(null);
+        logEvent(analytics, 'faculty_select', {
+            faculty: value
+        });
     };
 
     const handleDepartmentChange = (value: string) => {
         setSelectedDepartment(value);
+        logEvent(analytics, 'department_select', {
+            faculty: selectedFaculty,
+            department: value
+        });
     };
 
     const handleDepartmentClick = (dept: SavedDepartment) => {
@@ -120,54 +129,55 @@ const FacultyDepartmentSelector: React.FC = () => {
         dispatch(setSelectedFacultyAndDepartment({
             faculty: dept.faculty,
             department: dept.department,
-            courses: dept.courses
+            courses: dept.courses,
+            userId: currentUser?.uid
         }));
-        updateActiveDepartment(dept);
+        logEvent(analytics, 'saved_department_select', {
+            faculty: dept.faculty,
+            department: dept.department
+        });
     };
 
-    const handleRemoveDepartment = (dept: SavedDepartment) => {
+    const handleDeleteDepartment = (dept: SavedDepartment) => {
         setDepartmentToDelete(dept);
+        logEvent(analytics, 'department_delete_attempt', {
+            faculty: dept.faculty,
+            department: dept.department
+        });
     };
 
     const confirmDelete = async () => {
         if (!departmentToDelete) return;
 
-        const deptToRemove = departmentToDelete;
-
-        dispatch(removeDepartment({
-            faculty: deptToRemove.faculty,
-            department: deptToRemove.department
-        }));
-
-        await deleteDepartmentFromFirestore(deptToRemove.faculty, deptToRemove.department);
-
-        setSelectedDepartments(prev => {
-            const updatedDepts = prev.filter(d =>
-                !(d.faculty === deptToRemove.faculty && d.department === deptToRemove.department)
+        try {
+            await deleteDepartmentFromFirestore(
+                departmentToDelete.faculty,
+                departmentToDelete.department
             );
-            return updatedDepts;
-        });
-
-        if (activeDepartment &&
-            activeDepartment.faculty === deptToRemove.faculty &&
-            activeDepartment.department === deptToRemove.department) {
-            const remaining = selectedDepartments.filter(d =>
-                !(d.faculty === deptToRemove.faculty && d.department === deptToRemove.department)
+            dispatch(removeDepartment({
+                faculty: departmentToDelete.faculty,
+                department: departmentToDelete.department
+            }));
+            setSelectedDepartments(prev =>
+                prev.filter(d =>
+                    d.faculty !== departmentToDelete.faculty ||
+                    d.department !== departmentToDelete.department
+                )
             );
-            if (remaining.length > 0) {
-                handleDepartmentClick(remaining[0]);
-            } else {
-                setActiveDepartment(null);
-                dispatch(setSelectedFacultyAndDepartment({
-                    faculty: '',
-                    department: '',
-                    courses: []
-                }));
-            }
+            message.success('Department successfully deleted');
+            logEvent(analytics, 'department_delete_success', {
+                faculty: departmentToDelete.faculty,
+                department: departmentToDelete.department
+            });
+        } catch (error: any) {
+            message.error('Error deleting department');
+            logEvent(analytics, 'department_delete_error', {
+                faculty: departmentToDelete.faculty,
+                department: departmentToDelete.department,
+                error: error.message
+            });
         }
-
         setDepartmentToDelete(null);
-        message.success(`${deptToRemove.faculty} - ${deptToRemove.department} bölümü başarıyla silindi.`);
     };
 
     const cancelDelete = () => {
@@ -188,7 +198,7 @@ const FacultyDepartmentSelector: React.FC = () => {
             });
         } catch (error) {
             console.error('Error saving department:', error);
-            message.error('Departman kaydedilirken bir hata oluştu');
+            message.error('An error occurred while saving department');
         }
     };
 
@@ -202,7 +212,7 @@ const FacultyDepartmentSelector: React.FC = () => {
             await deleteDoc(departmentRef);
         } catch (error) {
             console.error('Error deleting department:', error);
-            message.error('Departman silinirken bir hata oluştu');
+            message.error('An error occurred while deleting department');
         }
     };
 
@@ -213,6 +223,17 @@ const FacultyDepartmentSelector: React.FC = () => {
         const departmentRef = doc(db, 'departments', departmentId);
 
         try {
+            const docSnap = await getDocs(query(collection(db, 'departments'),
+                where('userId', '==', currentUser.uid),
+                where('faculty', '==', dept.faculty),
+                where('department', '==', dept.department)
+            ));
+
+            if (docSnap.empty) {
+                console.log('Document does not exist, skipping update');
+                return;
+            }
+
             await updateDoc(departmentRef, {
                 isActive: true,
                 updatedAt: new Date().toISOString()
@@ -225,14 +246,23 @@ const FacultyDepartmentSelector: React.FC = () => {
             for (const otherDept of otherDepts) {
                 const otherId = `${currentUser.uid}_${otherDept.faculty}_${otherDept.department}`;
                 const otherRef = doc(db, 'departments', otherId);
-                await updateDoc(otherRef, {
-                    isActive: false,
-                    updatedAt: new Date().toISOString()
-                });
+
+                const otherDocSnap = await getDocs(query(collection(db, 'departments'),
+                    where('userId', '==', currentUser.uid),
+                    where('faculty', '==', otherDept.faculty),
+                    where('department', '==', otherDept.department)
+                ));
+
+                if (!otherDocSnap.empty) {
+                    await updateDoc(otherRef, {
+                        isActive: false,
+                        updatedAt: new Date().toISOString()
+                    });
+                }
             }
         } catch (error) {
             console.error('Error updating active department:', error);
-            message.error('Aktif departman güncellenirken bir hata oluştu');
+            message.error('An error occurred while updating active department');
         }
     };
 
@@ -304,7 +334,7 @@ const FacultyDepartmentSelector: React.FC = () => {
                                 onClose={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
-                                    handleRemoveDepartment(dept);
+                                    handleDeleteDepartment(dept);
                                 }}
                             >
                                 {`${dept.faculty} - ${dept.department}`}
@@ -327,7 +357,6 @@ const FacultyDepartmentSelector: React.FC = () => {
                     {departmentToDelete && `Are you sure you want to delete the ${departmentToDelete.faculty} - ${departmentToDelete.department} department? This action cannot be undone.`}
                 </p>
             </Modal>
-
         </div>
     );
 };

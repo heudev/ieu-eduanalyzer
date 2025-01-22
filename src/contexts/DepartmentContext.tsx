@@ -27,7 +27,7 @@ export const DepartmentProvider: React.FC<{ children: React.ReactNode }> = ({ ch
                     const userDepartments = await departmentService.getUserDepartments(user.uid);
                     setDepartments(userDepartments);
                 } catch (error) {
-                    console.error('Departmanlar yüklenirken hata:', error);
+                    console.error('Error loading departments:', error);
                 }
             } else {
                 setDepartments([]);

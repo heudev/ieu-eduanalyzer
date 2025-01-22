@@ -5,6 +5,8 @@ import { Course, LetterGrade, CourseStatus, RootState } from '../types';
 import { updateCourse, addCourse, calculateStats, deleteCourse } from '../store/courseSlice';
 import { PlusOutlined, DownloadOutlined, DeleteOutlined, EditOutlined, TrophyOutlined, CompassOutlined } from '@ant-design/icons';
 import { useAuth } from '../contexts/AuthContext';
+import { logEvent } from 'firebase/analytics';
+import { analytics } from '../firebase';
 const { Option } = Select;
 
 const CourseTable: React.FC = () => {
@@ -30,7 +32,7 @@ const CourseTable: React.FC = () => {
     const handleGradeChange = useCallback((courseId: string, letterGrade: LetterGrade) => {
         const courseToUpdate = courses.find(course => course.id === courseId);
         if (!courseToUpdate) {
-            message.error('Ders bulunamadı');
+            message.error('Course not found');
             return;
         }
 
@@ -42,12 +44,17 @@ const CourseTable: React.FC = () => {
             userId: currentUser?.uid
         }));
         dispatch(calculateStats());
+
+        logEvent(analytics, 'grade_update', {
+            course_code: courseToUpdate.code,
+            grade: letterGrade
+        });
     }, [dispatch, courses, currentUser]);
 
     const handleStatusChange = useCallback((courseId: string, status: CourseStatus) => {
         const courseToUpdate = courses.find(course => course.id === courseId);
         if (!courseToUpdate) {
-            message.error('Ders bulunamadı');
+            message.error('Course not found');
             return;
         }
 
@@ -59,24 +66,36 @@ const CourseTable: React.FC = () => {
             userId: currentUser?.uid
         }));
         dispatch(calculateStats());
+
+        logEvent(analytics, 'course_status_update', {
+            course_code: courseToUpdate.code,
+            status: status
+        });
     }, [dispatch, courses, currentUser]);
 
     const handleDeleteCourse = useCallback((courseId: string) => {
+        const courseToDelete = courses.find(course => course.id === courseId);
+        if (!courseToDelete) return;
+
         Modal.confirm({
-            title: 'Dersi Sil',
-            content: 'Bu dersi silmek istediğinizden emin misiniz?',
-            okText: 'Evet',
-            cancelText: 'Hayır',
+            title: 'Delete Course',
+            content: 'Are you sure you want to delete this course?',
+            okText: 'Yes',
+            cancelText: 'No',
             onOk: () => {
                 dispatch(deleteCourse({
                     courseId,
                     userId: currentUser?.uid
                 }));
                 dispatch(calculateStats());
-                message.success('Ders başarıyla silindi');
+                message.success('Course successfully deleted');
+
+                logEvent(analytics, 'course_delete', {
+                    course_code: courseToDelete.code
+                });
             }
         });
-    }, [dispatch, currentUser]);
+    }, [dispatch, currentUser, courses]);
 
     const handleAddCourse = useCallback(() => {
         form.validateFields().then(values => {
@@ -96,7 +115,14 @@ const CourseTable: React.FC = () => {
             dispatch(calculateStats());
             setIsModalVisible(false);
             form.resetFields();
-            message.success('Ders başarıyla eklendi');
+            message.success('Course successfully added');
+
+            logEvent(analytics, 'course_add', {
+                course_code: values.code,
+                course_name: values.name,
+                credits: values.credits,
+                semester: values.semester
+            });
         });
     }, [dispatch, form, currentUser]);
 
@@ -120,8 +146,15 @@ const CourseTable: React.FC = () => {
             link.download = 'department.csv';
             link.click();
             message.success('Courses exported successfully');
-        } catch (error) {
+
+            logEvent(analytics, 'courses_export', {
+                total_courses: courses.length
+            });
+        } catch (error: any) {
             message.error('Error exporting courses');
+            logEvent(analytics, 'courses_export_error', {
+                error: error.message
+            });
         }
     }, [courses]);
 
@@ -182,7 +215,7 @@ const CourseTable: React.FC = () => {
             setIsEditModalVisible(false);
             setEditingCourse(null);
             editForm.resetFields();
-            message.success('Ders başarıyla güncellendi');
+            message.success('Course successfully updated');
         });
     }, [dispatch, editForm, editingCourse, currentUser]);
 

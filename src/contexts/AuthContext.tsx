@@ -34,9 +34,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const signIn = async (email: string, password: string) => {
         try {
             await signInWithEmailAndPassword(auth, email, password);
-            message.success('Başarıyla giriş yapıldı');
+            message.success('Successfully signed in');
         } catch (error) {
-            message.error('Giriş yapılırken bir hata oluştu');
+            message.error('An error occurred while signing in');
             throw error;
         }
     };
@@ -45,9 +45,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
             const provider = new GoogleAuthProvider();
             await signInWithPopup(auth, provider);
-            message.success('Google ile başarıyla giriş yapıldı');
+            message.success('Successfully signed in with Google');
         } catch (error) {
-            message.error('Google ile giriş yapılırken bir hata oluştu');
+            message.error('An error occurred while signing in with Google');
             throw error;
         }
     };
@@ -55,9 +55,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const signUp = async (email: string, password: string) => {
         try {
             await createUserWithEmailAndPassword(auth, email, password);
-            message.success('Hesap başarıyla oluşturuldu');
+            message.success('Account successfully created');
         } catch (error) {
-            message.error('Hesap oluşturulurken bir hata oluştu');
+            message.error('An error occurred while creating account');
             throw error;
         }
     };
@@ -65,9 +65,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const logout = async () => {
         try {
             await signOut(auth);
-            message.success('Başarıyla çıkış yapıldı');
+            message.success('Successfully signed out');
         } catch (error) {
-            message.error('Çıkış yapılırken bir hata oluştu');
+            message.error('An error occurred while signing out');
             throw error;
         }
     };

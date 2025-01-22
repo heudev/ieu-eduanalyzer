@@ -1,4 +1,4 @@
-import { Middleware, Action, AnyAction } from '@reduxjs/toolkit';
+import { Middleware } from '@reduxjs/toolkit';
 import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { auth, db } from '../../firebase';
 import { RootState } from '../../types';
@@ -19,7 +19,7 @@ export const loadFirebaseState = async (userId: string) => {
         }
         return undefined;
     } catch (err) {
-        console.error('Firebase\'den veri yüklenirken hata oluştu:', err);
+        console.error('Error loading data from Firebase:', err);
         return undefined;
     }
 };
@@ -37,7 +37,7 @@ export const syncToFirebase = async (state: RootState) => {
             stats: state.course.stats
         });
     } catch (err) {
-        console.error('Veriler Firebase\'e aktarılırken hata oluştu:', err);
+        console.error('Error syncing data to Firebase:', err);
     }
 };
 
